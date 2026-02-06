@@ -24,9 +24,10 @@ from metrics import (
 def perturb_params(params, pct, seed):
     random.seed(seed)
     perturbed = dict(params)
-    for key in ["diffusion", "macro_coupling", "forcing_base", "forcing_trend"]:
-        delta = params[key] * pct
-        perturbed[key] = params[key] + random.uniform(-delta, delta)
+    for key in ["diffusion", "macro_coupling", "forcing_scale", "damping", "noise"]:
+        if key in params:
+            delta = params[key] * pct
+            perturbed[key] = params[key] + random.uniform(-delta, delta)
     return perturbed
 
 
@@ -122,7 +123,7 @@ def build_forcing(train_df, full_df, value_col):
 def calibrate_abm_params(obs, base_params, steps):
     candidates = []
     for forcing_scale in [0.01, 0.03, 0.05, 0.1, 0.2]:
-        for macro_coupling in [0.0, 0.2, 0.4]:
+        for macro_coupling in [0.1, 0.2, 0.4]:
             for damping in [0.0, 0.02, 0.05]:
                 params = dict(base_params)
                 params["forcing_scale"] = forcing_scale
@@ -180,17 +181,21 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
         raise RuntimeError(f"Data coverage too low for phase {phase_name}: {coverage:.2f}")
 
     obs_raw = df["price"].tolist()
-    obs_mean = float(np.mean(obs_raw))
     df = df.copy()
-    df["price_anom"] = df["price"] - obs_mean
 
     train_df = df[df["date"] < split_date]
     val_df = df[df["date"] >= split_date]
     if train_df.empty or val_df.empty:
         raise RuntimeError(f"Insufficient data for train/validation split in phase {phase_name}")
 
+    train_mean = float(np.mean(train_df["price"].tolist()))
+    df["price_anom"] = df["price"] - train_mean
+    train_df = df[df["date"] < split_date]
+    val_df = df[df["date"] >= split_date]
+
     obs = df["price_anom"].tolist()
     obs_val = val_df["price_anom"].tolist()
+    obs_mean = float(np.mean(obs_raw))
     obs_std_all = float(np.std(obs)) if obs else 0.0
     outlier_share = 0.0
     if obs_std_all > 0.0:
@@ -231,10 +236,10 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
     base_params["macro_coupling"] = best_coupling
     base_params["damping"] = best_damping
 
-    assimilation_series = [None] + obs[:-1]
+    # Evaluación sin nudging para evitar leakage
     eval_params = dict(base_params)
-    eval_params["assimilation_series"] = assimilation_series
-    eval_params["assimilation_strength"] = 0.1
+    eval_params["assimilation_series"] = None
+    eval_params["assimilation_strength"] = 0.0
 
     seeds = {
         "abm": 2,
@@ -267,8 +272,8 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
     c1 = err_abm < err_threshold and err_ode < err_threshold and corr_abm > 0.7 and corr_ode > 0.7
 
     perturbed = perturb_params(base_params, 0.1, seed=10)
-    perturbed["assimilation_series"] = assimilation_series
-    perturbed["assimilation_strength"] = 1.0
+    perturbed["assimilation_series"] = None
+    perturbed["assimilation_strength"] = 0.0
     abm_pert = simulate_abm(perturbed, steps, seed=seeds["perturbed"])
     mean_delta = abs(mean(abm_pert["x"][val_start:]) - mean(abm["x"][val_start:]))
     var_delta = abs(variance(abm_pert["x"][val_start:]) - variance(abm["x"][val_start:]))
@@ -295,8 +300,8 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
     sensitivities = []
     for i in range(5):
         p = perturb_params(base_params, 0.1, seed=20 + i)
-        p["assimilation_series"] = assimilation_series
-        p["assimilation_strength"] = 1.0
+    p["assimilation_series"] = None
+    p["assimilation_strength"] = 0.0
         s = simulate_abm(p, steps, seed=seeds["sensitivity"][i])
         sensitivities.append(mean(s["x"][val_start:]))
     sens_min = min(sensitivities)
@@ -336,7 +341,7 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
             "forcing_scale": base_params["forcing_scale"],
             "macro_coupling": base_params["macro_coupling"],
             "damping": base_params.get("damping", 0.0),
-            "assimilation_strength": 1.0,
+            "assimilation_strength": eval_params["assimilation_strength"],
             "ode_alpha": base_params["ode_alpha"],
             "ode_beta": base_params["ode_beta"],
         },
@@ -415,6 +420,9 @@ def evaluate():
     real_split = "2011-01-01"
     real_df = load_observations(real_start, real_end)
     real = evaluate_phase("real", real_df, real_start, real_end, real_split)
+    if not synthetic.get("overall_pass", False):
+        real["overall_pass"] = False
+        real["gated_by_synthetic"] = True
 
     return {
         "generated_at": datetime.utcnow().isoformat() + "Z",
