@@ -64,7 +64,12 @@ def simulate_abm(params, steps, seed):
 
                 neighbor_mean = sum(neighbors) / len(neighbors)
 
-                # Micro dynamics: diffusion + forcing + macro coupling + noise
+                # TRADUCCIÓN PARA INFORMÁTICOS (Dinámica Micro):
+                # 1. DIFUSIÓN: Promedio pesado con vecinos (suavizado espacial).
+                # 2. FORZING: Aplicar la tendencia global del mes (estacionalidad).
+                # 3. MACRO COUPLING: "Goma elástica" hacia el promedio global actual.
+                # 4. DAMPING: Pérdida de energía/calor para evitar que el valor explote.
+                # 5. NOISE: Inyección de caos aleatorio para realismo.
                 new_t = (
                     grid[i][j]
                     + diff * (neighbor_mean - grid[i][j])
@@ -74,13 +79,15 @@ def simulate_abm(params, steps, seed):
                     + random.uniform(-noise, noise)
                 )
 
-                # Humidity as a weakly coupled auxiliary variable
+                # Humedad: Variable secundaria que sigue al forzamiento climático.
                 new_h = hum[i][j] + 0.05 * (0.5 - hum[i][j]) + 0.001 * f
 
                 new_grid[i][j] = new_t
                 new_hum[i][j] = new_h
 
-        # Optional assimilation (nudging) using lagged observations
+        # NUDGING (ASIMILACIÓN):
+        # Si tenemos datos reales (target), forzamos a toda la rejilla a 
+        # acercarse a la realidad basándonos en el error detectado (target - tbar).
         if assimilation_series is not None and t < len(assimilation_series):
             target = assimilation_series[t]
             if target is not None:

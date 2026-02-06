@@ -34,8 +34,14 @@ def simulate_ode(params, steps, seed):
 
     for t in range(steps):
         f = forcing[t]
-        # Simple energy balance update
+        
+        # TRADUCCIÓN PARA INFORMÁTICOS (Balance Energético):
+        # tbar = tbar + alpha * (input - output) + noise
+        # alpha: Velocidad de reacción del sistema.
+        # (f - beta * tbar): Diferencia entre energía que entra (f) y la que se disipa (beta * tbar).
         tbar = tbar + alpha * (f - beta * tbar) + random.uniform(-noise, noise)
+        
+        # NUDGING: Si hay datos reales, aplicamos un "ajuste manual" para corregir el rumbo.
         if assimilation_series is not None and t < len(assimilation_series):
             target = assimilation_series[t]
             if target is not None:

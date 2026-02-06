@@ -1,8 +1,8 @@
-# Caso Clima Regional (Modelo y Simulacion)
+# Caso Contaminacion del Aire (PM2.5)
 
-Este caso implementa dos modelos no isomorfos para dinamica climatica regional:
-- Modelo micro (ABM/lattice) con interaccion local y acople macro.
-- Modelo macro (ODE/energy-balance agregado) con forcing exogeno.
+Este caso implementa dos modelos no isomorfos para dinamica de contaminacion:
+- Modelo micro (ABM/lattice) con difusion local y acople macro.
+- Modelo macro (ODE agregado) con forzamiento externo.
 
 El objetivo es cumplir criterios del marco 00/01/02:
 - Capas completas (conceptual, formal, computacional, validacion).
@@ -31,10 +31,10 @@ Genera:
 
 ## Datos sinteticos y reales
 - Fase sintetica: calibracion y verificacion interna con serie sintetica.
-- Fase real: evaluacion final con datos regionales (Meteostat, CONUS) en el periodo 1990-2024.
-El script cachea los datos reales en `data/regional_monthly_tavg.csv`.
+- Fase real: evaluacion final con datos reales (World Bank, WLD).
+El script cachea los datos reales en `data/pm25_world.csv`.
 
 ## Validacion
-- Split entrenamiento/validacion sintetica: 2000-2009 / 2010-2019.
-- Split entrenamiento/validacion real: 1990-2010 / 2011-2024.
+- Split entrenamiento/validacion sintetica: 1980-1999 / 2000-2019.
+- Split entrenamiento/validacion real: 1990-2005 / 2006-2022.
 - Nudging con observacion rezagada (t-1) para evaluacion de corto plazo.

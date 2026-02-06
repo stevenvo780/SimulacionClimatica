@@ -1,8 +1,8 @@
-# Caso Clima Regional (Modelo y Simulacion)
+# Caso Energia Electrica (Demanda)
 
-Este caso implementa dos modelos no isomorfos para dinamica climatica regional:
-- Modelo micro (ABM/lattice) con interaccion local y acople macro.
-- Modelo macro (ODE/energy-balance agregado) con forcing exogeno.
+Este caso implementa dos modelos no isomorfos para dinamica de demanda electrica:
+- Modelo micro (ABM/lattice) con difusion local y acople macro.
+- Modelo macro (ODE agregado) con forzamiento externo.
 
 El objetivo es cumplir criterios del marco 00/01/02:
 - Capas completas (conceptual, formal, computacional, validacion).
@@ -31,10 +31,10 @@ Genera:
 
 ## Datos sinteticos y reales
 - Fase sintetica: calibracion y verificacion interna con serie sintetica.
-- Fase real: evaluacion final con datos regionales (Meteostat, CONUS) en el periodo 1990-2024.
-El script cachea los datos reales en `data/regional_monthly_tavg.csv`.
+- Fase real: evaluacion final con datos reales (OPSD, demanda GB).
+El script cachea los datos reales en `data/opsd_load_monthly.csv`.
 
 ## Validacion
 - Split entrenamiento/validacion sintetica: 2000-2009 / 2010-2019.
-- Split entrenamiento/validacion real: 1990-2010 / 2011-2024.
-- Nudging con observacion rezagada (t-1) para evaluacion de corto plazo.
+- Split entrenamiento/validacion real: 2015-2018 / 2019-2020.
+- Nudging con observacion del mismo periodo (t) para evaluacion de corto plazo.

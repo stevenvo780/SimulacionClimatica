@@ -1,8 +1,8 @@
-# Caso Clima Regional (Modelo y Simulacion)
+# Caso Finanzas Globales (Modelo y Simulacion)
 
-Este caso implementa dos modelos no isomorfos para dinamica climatica regional:
-- Modelo micro (ABM/lattice) con interaccion local y acople macro.
-- Modelo macro (ODE/energy-balance agregado) con forcing exogeno.
+Este caso implementa dos modelos no isomorfos para dinamica de precios en un indice bursatil:
+- Modelo micro (ABM/lattice) con agentes de tendencia y fundamentalistas.
+- Modelo macro (ODE agregado) con forzamiento externo.
 
 El objetivo es cumplir criterios del marco 00/01/02:
 - Capas completas (conceptual, formal, computacional, validacion).
@@ -31,8 +31,8 @@ Genera:
 
 ## Datos sinteticos y reales
 - Fase sintetica: calibracion y verificacion interna con serie sintetica.
-- Fase real: evaluacion final con datos regionales (Meteostat, CONUS) en el periodo 1990-2024.
-El script cachea los datos reales en `data/regional_monthly_tavg.csv`.
+- Fase real: evaluacion final con datos de mercado reales (SPY, 1990-2024).
+El script cachea los datos reales en `data/spy_monthly.csv`.
 
 ## Validacion
 - Split entrenamiento/validacion sintetica: 2000-2009 / 2010-2019.

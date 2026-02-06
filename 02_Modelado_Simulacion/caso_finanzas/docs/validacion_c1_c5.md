@@ -1,9 +1,9 @@
-# Validacion C1-C5 (Clima Regional)
+# Validacion C1-C5 (Finanzas Globales)
 
 ## C1 Convergencia
 - Fase sintetica: ABM y ODE deben ajustar la serie sintetica con error bajo umbral.
 - Fase real: ABM y ODE deben ajustar la serie real con error bajo umbral.
-- Datos reales regionales (Meteostat, CONUS, 1990-2024).
+- Datos reales: SPY (1990-2024), cierre mensual.
 - Umbral definido por caso: `0.6 * sigma` del conjunto de validacion.
 
 ## Verificacion (escenario controlado)
@@ -12,7 +12,7 @@
 
 ## C2 Robustez
 - Parametros se perturban en rango +/-10%.
-- Resultados deben permanecer estables (regimen y metricas).
+- Resultados deben permanecer estables.
 
 ## C3 Replicacion
 - Dos semillas/condiciones iniciales distintas.
@@ -20,7 +20,7 @@
 
 ## C4 Validez
 - Interna: reglas causales coherentes.
-- Externa: generalizacion a forcing alterno.
+- Externa: respuesta a forcing alterno.
 - Constructiva: correspondencia concepto-indicador documentada.
 
 ## C5 Incertidumbre explicita

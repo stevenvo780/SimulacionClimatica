@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+**/outputs/
+02_Modelado_Simulacion/caso_energia/data/opsd_time_series.csv
+02_Modelado_Simulacion/caso_epidemiologia/data/owid_covid.csv

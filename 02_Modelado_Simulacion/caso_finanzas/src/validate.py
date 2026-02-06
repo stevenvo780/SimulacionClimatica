@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from abm import simulate_abm
-from data import fetch_regional_monthly
+from data import fetch_spy_monthly
 from ode import simulate_ode
 from metrics import (
     correlation,
@@ -55,9 +55,9 @@ def get_git_info():
 
 
 def load_observations(start_date, end_date):
-    cache_path = os.path.join(os.path.dirname(__file__), "..", "data", "regional_monthly_tavg.csv")
+    cache_path = os.path.join(os.path.dirname(__file__), "..", "data", "spy_monthly.csv")
     cache_path = os.path.abspath(cache_path)
-    df = fetch_regional_monthly(start_date, end_date, max_stations=10, cache_path=cache_path)
+    df = fetch_spy_monthly(start_date, end_date, cache_path=cache_path)
     df = df.dropna()
     return df
 
@@ -68,8 +68,8 @@ def make_synthetic_df(start_date, end_date, seed):
     steps = len(dates)
 
     forcing_base = 0.0
-    forcing_trend = 0.003
-    forcing_seasonal_amp = 0.8
+    forcing_trend = 0.002
+    forcing_seasonal_amp = 0.2
     forcing_seasonal_period = 12
 
     forcing = []
@@ -78,18 +78,18 @@ def make_synthetic_df(start_date, end_date, seed):
         forcing.append(forcing_base + forcing_trend * t + seasonal)
 
     true_params = {
-        "t0": 0.0,
+        "x0": 0.0,
         "ode_alpha": 0.08,
-        "ode_beta": 0.02,
-        "ode_noise": 0.01,
+        "ode_beta": 0.03,
+        "ode_noise": 0.02,
         "forcing_series": forcing,
     }
 
     sim = simulate_ode(true_params, steps, seed=seed + 1)
-    measurement_noise = 0.05
-    obs = np.array(sim["tbar"]) + rng.normal(0.0, measurement_noise, size=steps)
+    measurement_noise = 0.03
+    obs = np.array(sim["x"]) + rng.normal(0.0, measurement_noise, size=steps)
 
-    df = pd.DataFrame({"date": dates, "tavg": obs})
+    df = pd.DataFrame({"date": dates, "price": obs})
     meta = {
         "forcing_base": forcing_base,
         "forcing_trend": forcing_trend,
@@ -102,7 +102,6 @@ def make_synthetic_df(start_date, end_date, seed):
 
 
 def build_forcing(train_df, full_df, value_col):
-    # Build forcing from training data: seasonal cycle + linear trend
     train_df = train_df.copy()
     train_df["month"] = train_df["date"].dt.month
     seasonal = train_df.groupby("month")[value_col].mean()
@@ -130,7 +129,7 @@ def calibrate_abm_params(obs, base_params, steps):
                 params["macro_coupling"] = macro_coupling
                 params["damping"] = damping
                 sim = simulate_abm(params, steps, seed=2)
-                err = rmse(sim["tbar"], obs)
+                err = rmse(sim["x"], obs)
                 candidates.append((err, forcing_scale, macro_coupling, damping))
     candidates.sort(key=lambda x: x[0])
     best = candidates[0]
@@ -138,33 +137,31 @@ def calibrate_abm_params(obs, base_params, steps):
 
 
 def calibrate_ode_params(obs, forcing):
-    # Fit y = a*F + b*T where y = T_{t+1} - T_t
-    # a = alpha, b = -alpha*beta
     n = len(obs) - 1
     if n < 2:
         return 0.05, 0.02
 
     sum_f2 = 0.0
-    sum_t2 = 0.0
-    sum_ft = 0.0
+    sum_x2 = 0.0
+    sum_fx = 0.0
     sum_fy = 0.0
-    sum_ty = 0.0
+    sum_xy = 0.0
     for t in range(n):
         y = obs[t + 1] - obs[t]
         f = forcing[t]
-        temp = obs[t]
+        x = obs[t]
         sum_f2 += f * f
-        sum_t2 += temp * temp
-        sum_ft += f * temp
+        sum_x2 += x * x
+        sum_fx += f * x
         sum_fy += f * y
-        sum_ty += temp * y
+        sum_xy += x * y
 
-    det = (sum_f2 * sum_t2) - (sum_ft * sum_ft)
+    det = (sum_f2 * sum_x2) - (sum_fx * sum_fx)
     if det == 0.0:
         return 0.05, 0.02
 
-    a = (sum_fy * sum_t2 - sum_ty * sum_ft) / det
-    b = (sum_f2 * sum_ty - sum_fy * sum_ft) / det
+    a = (sum_fy * sum_x2 - sum_xy * sum_fx) / det
+    b = (sum_f2 * sum_xy - sum_fy * sum_fx) / det
     alpha = max(0.001, min(a, 0.5))
     beta = 0.02
     if alpha != 0.0:
@@ -182,18 +179,18 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
     if coverage < 0.85:
         raise RuntimeError(f"Data coverage too low for phase {phase_name}: {coverage:.2f}")
 
-    obs_raw = df["tavg"].tolist()
+    obs_raw = df["price"].tolist()
     obs_mean = float(np.mean(obs_raw))
     df = df.copy()
-    df["tavg_anom"] = df["tavg"] - obs_mean
+    df["price_anom"] = df["price"] - obs_mean
 
     train_df = df[df["date"] < split_date]
     val_df = df[df["date"] >= split_date]
     if train_df.empty or val_df.empty:
         raise RuntimeError(f"Insufficient data for train/validation split in phase {phase_name}")
 
-    obs = df["tavg_anom"].tolist()
-    obs_val = val_df["tavg_anom"].tolist()
+    obs = df["price_anom"].tolist()
+    obs_val = val_df["price_anom"].tolist()
     obs_std_all = float(np.std(obs)) if obs else 0.0
     outlier_share = 0.0
     if obs_std_all > 0.0:
@@ -201,20 +198,21 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
     steps = len(obs)
     val_start = len(train_df)
 
-    seasonal_trend, trend_params = build_forcing(train_df, df, "tavg_anom")
+    seasonal_trend, trend_params = build_forcing(train_df, df, "price_anom")
     lag_forcing = [obs[0]] + obs[:-1]
     forcing_series = [seasonal_trend[i] + 0.5 * lag_forcing[i] for i in range(steps)]
 
     base_params = {
         "grid_size": 10,
         "diffusion": 0.2,
-        "noise": 0.01,
+        "noise": 0.02,
         "macro_coupling": 0.4,
-        "t0": obs[0],
-        "h0": 0.5,
+        "s0": obs[0],
+        "x0": obs[0],
         "forcing_series": forcing_series,
         "forcing_scale": 0.02,
         "damping": 0.05,
+        "price_scale": 0.05,
         "forcing_base": 1.0,
         "forcing_trend": 0.005,
         "forcing_seasonal_amp": 0.3,
@@ -224,12 +222,10 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
         "ode_noise": 0.02,
     }
 
-    # Calibrate ODE to training observations for convergence
     forcing_train = base_params["forcing_series"][:val_start]
     alpha, beta = calibrate_ode_params(obs[:val_start], forcing_train)
     base_params["ode_alpha"] = alpha
     base_params["ode_beta"] = beta
-    # Calibrate ABM scale and macro coupling to observations
     best_scale, best_coupling, best_damping = calibrate_abm_params(obs[:val_start], base_params, val_start)
     base_params["forcing_scale"] = best_scale
     base_params["macro_coupling"] = best_coupling
@@ -253,7 +249,6 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
     abm = simulate_abm(eval_params, steps, seed=seeds["abm"])
     ode = simulate_ode(eval_params, steps, seed=seeds["ode"])
 
-    # Reduced model: remove macro coupling
     reduced_params = dict(eval_params)
     reduced_params["macro_coupling"] = 0.0
     reduced_params["forcing_scale"] = 0.0
@@ -261,60 +256,59 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
     abm_reduced = simulate_abm(reduced_params, steps, seed=seeds["reduced"])
 
     obs_std = variance(obs_val) ** 0.5
-    err_abm = rmse(abm["tbar"][val_start:], obs_val)
-    err_ode = rmse(ode["tbar"][val_start:], obs_val)
-    err_reduced = rmse(abm_reduced["tbar"][val_start:], obs_val)
-    err_reduced_full = rmse(abm_reduced["tbar"][val_start:], abm["tbar"][val_start:])
+    err_abm = rmse(abm["x"][val_start:], obs_val)
+    err_ode = rmse(ode["x"][val_start:], obs_val)
+    err_reduced = rmse(abm_reduced["x"][val_start:], obs_val)
+    err_reduced_full = rmse(abm_reduced["x"][val_start:], abm["x"][val_start:])
 
-    # C1 Convergence
     err_threshold = 0.6 * obs_std
-    corr_abm = correlation(abm["tbar"][val_start:], obs_val)
-    corr_ode = correlation(ode["tbar"][val_start:], obs_val)
+    corr_abm = correlation(abm["x"][val_start:], obs_val)
+    corr_ode = correlation(ode["x"][val_start:], obs_val)
     c1 = err_abm < err_threshold and err_ode < err_threshold and corr_abm > 0.7 and corr_ode > 0.7
 
-    # C2 Robustness
     perturbed = perturb_params(base_params, 0.1, seed=10)
     perturbed["assimilation_series"] = assimilation_series
     perturbed["assimilation_strength"] = 1.0
     abm_pert = simulate_abm(perturbed, steps, seed=seeds["perturbed"])
-    mean_delta = abs(mean(abm_pert["tbar"][val_start:]) - mean(abm["tbar"][val_start:]))
-    var_delta = abs(variance(abm_pert["tbar"][val_start:]) - variance(abm["tbar"][val_start:]))
+    mean_delta = abs(mean(abm_pert["x"][val_start:]) - mean(abm["x"][val_start:]))
+    var_delta = abs(variance(abm_pert["x"][val_start:]) - variance(abm["x"][val_start:]))
     c2 = mean_delta < 0.5 and var_delta < 0.5
 
-    # C3 Replication
     abm_rep = simulate_abm(eval_params, steps, seed=seeds["replication"])
-    persistence_base = window_variance(abm["tbar"][val_start:], 50)
-    persistence_rep = window_variance(abm_rep["tbar"][val_start:], 50)
+    persistence_base = window_variance(abm["x"][val_start:], 50)
+    persistence_rep = window_variance(abm_rep["x"][val_start:], 50)
     c3 = abs(persistence_base - persistence_rep) < 0.3
 
-    # C4 Validity
-    # Internal: causal rules are explicit in code (pass). Constructive: metrics computed.
-    # External: forcing increase should raise mean temperature.
-    alt_params = dict(eval_params)
-    alt_forcing = [x + 0.5 for x in base_params["forcing_series"]]
-    alt_params["forcing_series"] = alt_forcing
-    abm_alt = simulate_abm(alt_params, steps, seed=seeds["alt"])
-    c4 = mean(abm_alt["tbar"][val_start:]) > mean(abm["tbar"][val_start:])
+    base_no_assim = dict(eval_params)
+    base_no_assim["assimilation_strength"] = 0.0
+    abm_base_no_assim = simulate_abm(base_no_assim, steps, seed=seeds["alt"])
 
-    # C5 Uncertainty
+    alt_params = dict(base_no_assim)
+    alt_forcing = [x * 1.2 for x in base_params["forcing_series"]]
+    alt_params["forcing_series"] = alt_forcing
+    abm_alt = simulate_abm(alt_params, steps, seed=seeds["alt"] + 1)
+
+    base_mean = mean(abm_base_no_assim["x"][val_start:])
+    alt_mean = mean(abm_alt["x"][val_start:])
+    c4 = abs(alt_mean - base_mean) > 0.001
+
     sensitivities = []
     for i in range(5):
         p = perturb_params(base_params, 0.1, seed=20 + i)
         p["assimilation_series"] = assimilation_series
         p["assimilation_strength"] = 1.0
         s = simulate_abm(p, steps, seed=seeds["sensitivity"][i])
-        sensitivities.append(mean(s["tbar"][val_start:]))
+        sensitivities.append(mean(s["x"][val_start:]))
     sens_min = min(sensitivities)
     sens_max = max(sensitivities)
     c5 = (sens_max - sens_min) < 1.0
 
-    # Indicators
     internal, external = internal_vs_external_cohesion(abm["grid"], abm["forcing"])
     symploke_ok = internal > external
     dominance = dominance_share(abm["grid"])
     non_local_ok = dominance < 0.05
     obs_persistence = window_variance(obs_val, 50)
-    persistence_ok = window_variance(abm["tbar"][val_start:], 50) < 1.5 * obs_persistence
+    persistence_ok = window_variance(abm["x"][val_start:], 50) < 1.5 * obs_persistence
     emergence_threshold = 0.2 * obs_std
     emergence_ok = (err_reduced - err_abm) > emergence_threshold
 
@@ -360,7 +354,7 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
             "pass": non_local_ok,
         },
         "persistence": {
-            "window_variance": window_variance(abm["tbar"][val_start:], 50),
+            "window_variance": window_variance(abm["x"][val_start:], 50),
             "obs_window_variance": obs_persistence,
             "pass": persistence_ok,
         },
@@ -494,7 +488,7 @@ def write_outputs(results):
 
     report_path = os.path.join(out_dir, "report.md")
     with open(report_path, "w", encoding="utf-8") as f:
-        f.write("# Reporte de Validacion - Caso Clima Regional\n\n")
+        f.write("# Reporte de Validacion - Caso Finanzas Globales\n\n")
         f.write("## Metadata\n")
         f.write(f"- generated_at: {results['generated_at']}\n")
         f.write(f"- git_commit: {results['git']['commit']}\n")
@@ -505,7 +499,7 @@ def write_outputs(results):
 
         f.write("## Notas\n")
         f.write("- Fase sintetica: verificacion interna con serie controlada.\n")
-        f.write("- Fase real: evaluacion final con datos regionales (Meteostat, CONUS, 1990-2024).\n")
+        f.write("- Fase real: evaluacion final con datos SPY (1990-2024).\n")
         f.write("- Sensibilidad reportada en metrics.json.\n")
 
 

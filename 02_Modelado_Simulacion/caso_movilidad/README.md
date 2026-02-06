@@ -1,8 +1,8 @@
-# Caso Clima Regional (Modelo y Simulacion)
+# Caso Movilidad Urbana (Modelo y Simulacion)
 
-Este caso implementa dos modelos no isomorfos para dinamica climatica regional:
-- Modelo micro (ABM/lattice) con interaccion local y acople macro.
-- Modelo macro (ODE/energy-balance agregado) con forcing exogeno.
+Este caso implementa dos modelos no isomorfos para dinamica de movilidad urbana:
+- Modelo micro (ABM/lattice) con agentes de flujo local y acople macro.
+- Modelo macro (ODE agregado) con forzamiento externo.
 
 El objetivo es cumplir criterios del marco 00/01/02:
 - Capas completas (conceptual, formal, computacional, validacion).
@@ -31,10 +31,10 @@ Genera:
 
 ## Datos sinteticos y reales
 - Fase sintetica: calibracion y verificacion interna con serie sintetica.
-- Fase real: evaluacion final con datos regionales (Meteostat, CONUS) en el periodo 1990-2024.
-El script cachea los datos reales en `data/regional_monthly_tavg.csv`.
+- Fase real: evaluacion final con datos reales (MTA Subway Daily Ridership, 2020-2024).
+El script cachea los datos reales en `data/mta_subway_monthly.csv`.
 
 ## Validacion
 - Split entrenamiento/validacion sintetica: 2000-2009 / 2010-2019.
-- Split entrenamiento/validacion real: 1990-2010 / 2011-2024.
+- Split entrenamiento/validacion real: 2020-2022 / 2023-2024.
 - Nudging con observacion rezagada (t-1) para evaluacion de corto plazo.

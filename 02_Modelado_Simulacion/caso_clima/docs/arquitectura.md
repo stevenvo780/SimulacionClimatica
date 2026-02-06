@@ -24,3 +24,9 @@
 - Validez interna/constructiva y reporte de incertidumbre.
 
 Regla: si una capa falta, el modelo se invalida.
+
+## Dialectica de modelado
+- Representacion vs realidad: el modelo solo se acepta si valida externamente.
+- Simplificacion vs complejidad: complejidad solo si mejora ajuste o explicacion.
+- Determinismo vs estocasticidad: se usa ruido para mejorar ajuste empirico.
+- Escalabilidad vs interpretabilidad: se prioriza interpretabilidad del modelo base.

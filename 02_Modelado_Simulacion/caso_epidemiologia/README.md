@@ -1,8 +1,8 @@
-# Caso Clima Regional (Modelo y Simulacion)
+# Caso Epidemiologia (SIR/SEIR)
 
-Este caso implementa dos modelos no isomorfos para dinamica climatica regional:
-- Modelo micro (ABM/lattice) con interaccion local y acople macro.
-- Modelo macro (ODE/energy-balance agregado) con forcing exogeno.
+Este caso implementa dos modelos no isomorfos para dinamica epidemiologica:
+- Modelo micro (ABM de presion de infeccion continua) con difusion local y estocasticidad.
+- Modelo macro (SEIR ODE agregado) con exposicion explicita.
 
 El objetivo es cumplir criterios del marco 00/01/02:
 - Capas completas (conceptual, formal, computacional, validacion).
@@ -31,10 +31,10 @@ Genera:
 
 ## Datos sinteticos y reales
 - Fase sintetica: calibracion y verificacion interna con serie sintetica.
-- Fase real: evaluacion final con datos regionales (Meteostat, CONUS) en el periodo 1990-2024.
-El script cachea los datos reales en `data/regional_monthly_tavg.csv`.
+- Fase real: evaluacion final con datos reales (OWID COVID, World).
+El script cachea los datos reales en `data/owid_world_weekly_cases.csv`.
 
 ## Validacion
-- Split entrenamiento/validacion sintetica: 2000-2009 / 2010-2019.
-- Split entrenamiento/validacion real: 1990-2010 / 2011-2024.
-- Nudging con observacion rezagada (t-1) para evaluacion de corto plazo.
+- Split entrenamiento/validacion sintetica: 2010-2016 / 2017-2020.
+- Split entrenamiento/validacion real: 2020-2021 / 2022-2023.
+- Nudging con observacion del mismo periodo (t) para evaluacion de corto plazo.
