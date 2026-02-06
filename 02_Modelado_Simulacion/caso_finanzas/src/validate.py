@@ -199,8 +199,8 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
     val_start = len(train_df)
 
     seasonal_trend, trend_params = build_forcing(train_df, df, "price_anom")
-    lag_forcing = [obs[0]] + obs[:-1]
-    forcing_series = [seasonal_trend[i] + 0.5 * lag_forcing[i] for i in range(steps)]
+    # Eliminamos el leakage: el forcing NO debe conocer el precio previo en sistemas de alta frecuencia/reflexivos
+    forcing_series = seasonal_trend
 
     base_params = {
         "grid_size": 10,
