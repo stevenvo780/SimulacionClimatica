@@ -312,6 +312,12 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
     emergence_threshold = 0.2 * obs_std
     emergence_ok = (err_reduced - err_abm) > emergence_threshold
 
+    # --- REGLAS DE RIGOR (AUDITORIA YUGULAR) ---
+    # 1. Downward Causation: No hay hiperobjeto si el macro no acopla con el micro.
+    coupling_ok = base_params["macro_coupling"] > 0.1
+    # 2. Resistencia al Aliasing: En finanzas, el ruido de alta frecuencia invalida la ODE.
+    aliasing_risk = phase_name == "real" and base_params["ode_alpha"] < 0.01
+
     results = {
         "phase": phase_name,
         "data": {
@@ -381,7 +387,7 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
             },
         },
         "seeds": seeds,
-        "overall_pass": all([c1, c2, c3, c4, c5, symploke_ok, non_local_ok, persistence_ok, emergence_ok]),
+        "overall_pass": all([c1, c2, c3, c4, c5, symploke_ok, non_local_ok, persistence_ok, emergence_ok, coupling_ok]) and not aliasing_risk,
     }
 
     if synthetic_meta:
