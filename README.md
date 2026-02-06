@@ -1,21 +1,38 @@
-# SimulacionClimatica: Modelado Híbrido de Sistemas Complejos
+# SimulacionClimatica: Ontología Operativa de Hiperobjetos
 
-Repositorio de investigación y simulación para la validación de la **Hipótesis H1 (Eficacia Causal de los Hiperobjetos)**. Utiliza un motor de simulación de doble escala (ABM + ODE) para estudiar dinámicas en 16 dominios críticos.
+> **Tesis Doctoral:** Validación computacional de la existencia de entidades masivamente distribuidas mediante modelos híbridos (ABM + ODE).
 
-## Estado de la Simulación (05/02/2026)
-Todos los modelos han completado sus fases de validación y cumplen con los criterios **C1-C5**.
+Este repositorio contiene la implementación técnica y la fundamentación teórica para demostrar la **Eficacia Causal** de los hiperobjetos (Morton, 2013).
 
-### Casos de Estudio Destacados
-1.  **Clima Regional:** Dinámica de temperatura y humedad en CONUS.
-2.  **Finanzas Globales:** Modelado disipativo del índice SPY.
-3.  **Movilidad Urbana:** Flujos de pasajeros en el Metro de NY (MTA).
-4.  **Cascadas DeFi (Caso Límite):** Simulación de colapsos sistémicos en redes financieras descentralizadas utilizando **acoplamiento bidireccional**.
+## 🚀 Instalación Rápida
 
-## Arquitectura
-El proyecto se organiza en capas estrictas:
-- **Conceptual:** Axiomas y supuestos del dominio.
-- **Formal:** Modelado matemático (Ecuaciones Diferenciales y Reglas de Agente).
-- **Computacional:** Implementación en Python.
-- **Validación:** Contraste contra datos reales en tiempo real.
+```bash
+git clone https://github.com/stevenvo780/SimulacionClimatica.git
+cd SimulacionClimatica
+pip install -r requirements.txt
+```
 
-Para más detalles, consulte `02_Modelado_Simulacion/index.md`.
+## 🧪 Experimentos Principales
+
+### 1. Caso Clima (El Éxito)
+Modelo validado que demuestra cómo la inercia térmica global "esclaviza" las fluctuaciones locales.
+*   **Ejecución:** `python3 02_Modelado_Simulacion/caso_clima/src/validate.py`
+*   **Resultado:** EDI 0.45 (Emergencia Fuerte).
+
+### 2. Caso Finanzas (El Rechazo)
+Modelo que falla intencionalmente para demostrar los límites de la predicción en sistemas reflexivos (Soros).
+*   **Ejecución:** `python3 02_Modelado_Simulacion/caso_finanzas/src/validate.py`
+*   **Resultado:** EDI 0.05 (Ruido/Aliasing).
+
+## 📚 Estructura de la Tesis (Versión Consolidada)
+
+La documentación se ha condensado en 5 módulos de alta densidad académica:
+
+*   **00_Marco_Conceptual:** Fundamentos filosóficos (OOO, Sinergética).
+*   **01_Metodologia:** Protocolos de rigor C1-C5.
+*   **02_Modelado:** Arquitectura del motor `HybridModel`.
+*   **03_Validacion:** Matriz de evidencia y análisis de fallos.
+*   **04_Casos:** Catálogo detallado de los 12 experimentos.
+
+## ⚖️ Licencia
+MIT License. Ver `LICENSE` para más detalles.

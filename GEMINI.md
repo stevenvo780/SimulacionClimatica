@@ -1,82 +1,47 @@
-# GEMINI.md - Resumen del Proyecto: SimulacionClimatica
+# GEMINI.md - Contexto del Proyecto: SimulacionClimatica (Versión Titanio)
 
-Este documento proporciona una visión general del proyecto `SimulacionClimatica`, sirviendo como contexto instructivo para futuras interacciones.
+Este documento sirve como contexto maestro para la IA. Describe la arquitectura consolidada de la tesis tras la "Reingeniería de Alta Densidad".
 
-## Resumen del Proyecto General
+## 1. Objetivo de la Tesis
+Validar la existencia de **Hiperobjetos** (entidades masivamente distribuidas) mediante pruebas de **Eficacia Causal**.
+*   **Hipótesis (H1):** Un hiperobjeto es real si su modelo macroscópico (ODE) reduce la entropía de sus componentes microscópicos (ABM) en >30% (EDI > 0.30).
 
-El proyecto `SimulacionClimatica` es una iniciativa integral de modelado y simulación que abarca múltiples **casos de estudio** o dominios. El objetivo principal es la implementación de **modelos alternativos no isomorfos** para la dinámica de sistemas complejos, adheriéndose a un marco de desarrollo riguroso (marco 00/01/02) que incluye capas completas (conceptual, formal, computacional, validación) y una validación exhaustiva (C1-C5).
+## 2. Estructura del Repositorio (Consolidada)
 
-Cada caso de estudio dentro del proyecto generalmente implementa:
-*   Un **Modelo Basado en Agentes (ABM) a microescala**, a menudo utilizando una estructura de celosía con interacción local y acoplamiento macro.
-*   Un **modelo de Ecuación Diferencial Ordinaria (ODE) a macroescala**, basado en balances agregados con forzamiento externo.
+### 00_Marco_Conceptual (Fundamentos)
+*   `00_00_Marco_Conceptual.md`: Ontología OOO (Morton) y Causalidad (Bunge).
+*   `00_01_Presupuestos_Axiomas.md`: Lógica formal del sistema.
+*   `00_02_Glosario_Maestro.md`: Definiciones operativas (Aliasing, Nudging).
+*   `00_03_Dialectica_Filosofica.md`: Defensa ante críticas (Reduccionismo, Tautología).
+*   `00_11_Bibliografia.md`: Las 17 fuentes nucleares (Haken, Shannon, Soros).
 
-El proyecto está desarrollado en **Python** y aprovecha bibliotecas comunes como `numpy` y `pandas` para operaciones numéricas y manipulación de datos, complementadas con librerías específicas para cada dominio (ej. `meteostat` para clima, `yfinance` para finanzas). Procesa tanto datos sintéticos como datos reales específicos de cada dominio.
+### 01_Metodologia_Medicion (Rigor)
+*   `01_01_Protocolo_Rigor.md`: Pipeline C1-C5.
+*   `01_02_Indicadores_Metricas.md`: Justificación matemática de EDI y CR.
+*   `01_03_Validez_y_Riesgos.md`: Niveles de Evidencia (LoE) y límites.
 
-## Principios y Reglas de Modelado y Simulación
+### 02_Modelado_Simulacion (Motor)
+*   `02_01_Arquitectura_Hibrida.md`: Implementación de la clase `HybridModel`.
+*   `02_02_Protocolo_y_Dialectica.md`: Navaja de Ockham (Híbrido vs Reducido).
+*   `02_03_Glosario_Matematico.md`: Fórmulas específicas de simulación.
+*   `caso_clima/`: Código fuente Python (Caso Exitoso).
+*   `caso_finanzas/`: Código fuente Python (Caso Fallido/Reflexivo).
 
-El capítulo "02 Modelado y Simulación" establece los siguientes principios operativos y reglas que rigen la construcción y validación de todos los modelos dentro de este proyecto:
+### 03_Validacion_Praxis (Resultados)
+*   `03_01_Evidencia_Empirica.md`: Clima, Energía, Epidemiología (LoE 4-5).
+*   `03_02_Evidencia_Prospectiva.md`: Justicia, Estética (LoE 1-2).
+*   `03_03_Post_Mortem_y_Falsacion.md`: Análisis del fallo en Finanzas.
+*   `03_8_Matriz_Validacion_00_01.md`: Cuadro de mando final.
 
-### Principios
-*   **Trazabilidad conceptual completa:** Asegurar que los modelos puedan ser rastreados hasta sus axiomas conceptuales.
-*   **Modelos multinivel con variables puente:** Integrar modelos de diferentes escalas (micro y macro) mediante variables que acoplan su dinámica.
-*   **Validación con C1-C5:** Utilizar un marco de validación riguroso para asegurar la robustez y validez de los modelos.
+### 04_Casos_De_Estudio (Detalle)
+*   `04_01_Evidencia_Dura.md`: Mecánica de los sistemas físicos.
+*   `04_02_Exploraciones_Sociales.md`: Mecánica de los sistemas sociales.
+*   `04_03_Fronteras_y_Aliasing.md`: Límites técnicos del modelo.
 
-### Arquitectura
-*   Los modelos deben pasar por capas sucesivas: **conceptual -> formal -> computacional -> validación**.
-*   **Cierre:** Ninguna de estas capas puede omitirse o ser incompleta para que un modelo sea considerado válido.
+## 3. Estado de los Modelos
+*   **Caso Clima:** VALIDADO (EDI 0.45). Demuestra inercia macro.
+*   **Caso Finanzas:** RECHAZADO (EDI 0.05). Demuestra reflexividad y aliasing temporal.
 
-### Reglas de Construcción
-*   Todo modelo debe tener un **modelo alternativo no isomorfo** para comparación y robustez.
-*   Todo resultado de simulación debe estar asociado a una **métrica clara y una regla de aceptación** definida.
-
-### Verificación y Reproducibilidad
-*   **Versionado** de código y parámetros para asegurar la replicabilidad.
-*   **Entornos replicables** para garantizar que las simulaciones puedan ser reproducidas por otros.
-*   **Reportes de sensibilidad** para entender cómo las variaciones en los parámetros afectan los resultados.
-
-## Casos de Estudio Incluidos
-
-### 1. Caso Clima Regional (`02_Modelado_Simulacion/caso_clima/`)
-
-Este caso se enfoca en la dinámica climática regional, implementando modelos micro (ABM/lattice) y macro (ODE/balance energético agregado). Utiliza datos meteorológicos (Meteostat, CONUS).
-
-**Configuración y Ejecución:**
-1.  **Instalar Dependencias:**
-    ```bash
-    pip install -r 02_Modelado_Simulacion/caso_clima/requirements.txt
-    ```
-2.  **Ejecutar la Simulación:**
-    ```bash
-    python3 02_Modelado_Simulacion/caso_clima/src/validate.py
-    ```
-Genera `outputs/metrics.json` y `outputs/report.md`.
-
-### 2. Caso Finanzas Globales (`02_Modelado_Simulacion/caso_finanzas/`)
-
-Este caso modela la dinámica de precios en un índice bursátil, con modelos micro (ABM/agentes de tendencia y fundamentalistas) y macro (ODE agregado). Utiliza datos de mercado reales (ej. SPY a través de `yfinance`).
-
-**Configuración y Ejecución:**
-1.  **Instalar Dependencias:**
-    ```bash
-    pip install -r 02_Modelado_Simulacion/caso_finanzas/requirements.txt
-    ```
-2.  **Ejecutar la Simulación:**
-    ```bash
-    python3 02_Modelado_Simulacion/caso_finanzas/src/validate.py
-    ```
-Genera `outputs/metrics.json` y `outputs/report.md`.
-
-## Estructura de Directorios Relevante
-
-*   `02_Modelado_Simulacion/`: Contiene la base conceptual y los diversos casos de estudio de simulación.
-    *   `02_Modelado_Simulacion/*.md`: Documentos que detallan principios generales, arquitectura, protocolos de simulación, etc.
-    *   `caso_clima/`: Proyecto específico para la simulación climática.
-        *   `src/`: Código fuente principal (programas Python).
-        *   `data/`: Datos utilizados por el modelo.
-        *   `docs/`: Documentación específica del caso (arquitectura, indicadores, validación).
-        *   `outputs/`: Resultados de las simulaciones.
-    *   `caso_finanzas/`: Proyecto específico para la simulación financiera, con una estructura idéntica a `caso_clima/`.
-        *   `src/`: Código fuente principal (programas Python).
-        *   `data/`: Datos utilizados por el modelo.
-        *   `docs/`: Documentación específica del caso.
-        *   `outputs/`: Resultados de las simulaciones.
+## 4. Instrucciones para la IA
+*   Priorizar la **Navaja de Ockham**: Si algo se puede explicar sin la capa macro, se descarta el hiperobjeto.
+*   Mantener el **Rigor Académico**: Citar siempre a Haken (Sinergética) o Shannon (Entropía) al hablar de métricas.
