@@ -152,7 +152,7 @@ def evaluate_phase(phase_name, df, start_date, end_date, split_date, synthetic_m
     assimilation_series = obs
     eval_params = dict(base_params)
     eval_params["assimilation_series"] = assimilation_series
-    eval_params["assimilation_strength"] = 1.0
+    eval_params["assimilation_strength"] = 0.4
 
     seeds = {
         "abm": 2,

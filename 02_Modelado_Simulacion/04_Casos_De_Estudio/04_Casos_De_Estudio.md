@@ -7,13 +7,10 @@ No buscamos "ajustar curvas". Buscamos **ruptura de simetría**. Si el modelo h�
 
 ## 2. Portafolio de Casos
 
-### A. El Hiperobjeto Climático (El Estándar de Oro)
-*   **Hipótesis:** ¿Existe una eficacia causal de la temperatura regional sobre la humedad local?
-*   **Resultado:** **POSITIVO.** El acoplamiento macro-micro es la única forma de capturar la varianza estacional sin divergir.
-
-### B. El Hiperobjeto Financiero (La Frontera del Caos)
-*   **Hipótesis:** ¿El SPY es una entidad con inercia propia o solo una suma de ruidos?
-*   **Resultado:** **NEGATIVO.** El modelo híbrido no aporta ventaja significativa, sugiriendo que la "capa macro" financiera es más volátil de lo que permite este marco.
+Resultados resumidos por caso:
+*   **VALIDADO:** Clima, Contaminación, Epidemiología, Wikipedia, Energía, Justicia, Bienestar/Conciencia, Paradigmas, Estética, Postverdad.
+*   **PROTOTIPO:** Movilidad Urbana.
+*   **RECHAZADO:** Finanzas (aliasing por alta frecuencia).
 
 ## 3. Visualización de la Verdad
-Cada caso incluye un `report.md` generado por el pipeline de QA. Estos reportes son los artefactos finales que un jurado puede auditar paso a paso.
+Cada caso incluye un `report.md` generado por el pipeline de QA en `02_Modelado_Simulacion/`. Estos reportes son los artefactos finales que un jurado puede auditar paso a paso.

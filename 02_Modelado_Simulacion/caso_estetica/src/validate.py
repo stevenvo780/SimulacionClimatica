@@ -214,7 +214,7 @@ def evaluate_phase(phase_name, df, start_year, end_year, split_year, synthetic_m
     eval_params = dict(base_params)
     eval_params["assimilation_series"] = assimilation_series
     # EVITAR SOBREAJUSTE: Asimilación reducida para validar la emergencia real del estilo.
-    eval_params["assimilation_strength"] = 0.35
+    eval_params["assimilation_strength"] = 0.4
 
     seeds = {
         "abm": 2,

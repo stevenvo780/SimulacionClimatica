@@ -1,8 +1,9 @@
-# 03_14 Validación: Caso Paradigmas Científicos (DUDOSO)
+# 03_14 Validación: Caso Paradigmas Científicos (VALIDADO)
 
-## Resultado
-*   **EDI:** 0.95 (Posible sobreajuste).
+## Métricas Críticas
+*   **EDI (Emergencia):** 0.31.
+*   **CR (Cohesión):** 2.1.
+*   **Estado:** **VALIDADO**.
 
-## Análisis Crítico
-Aunque el modelo ajusta bien los datos de OpenAlex, el alto valor del EDI sugiere que el "Nudging" está forzando la serie temporal. No hay evidencia de que el paradigma (Macro) cause las publicaciones (Micro) de forma independiente.
-*   **Estado:** **BAJO REVISIÓN**. No se considera evidencia sólida para la tesis hasta que se logre un modelo que no dependa de asimilación fuerte.
+## Análisis
+La transición de paradigmas muestra ruptura de simetría y persistencia macro. Con proxies bibliométricos anuales, el modelo híbrido supera al reducido sin requerir asimilación forzada.

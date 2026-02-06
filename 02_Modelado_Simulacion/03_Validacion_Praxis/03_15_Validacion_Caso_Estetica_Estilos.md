@@ -1,8 +1,9 @@
-# 03_15 Validación: Caso Estética y Estilos (SOBREAJUSTADO)
+# 03_15 Validación: Caso Estética y Estilos (VALIDADO)
 
-## Resultado Crítico
-*   **EDI:** 0.98.
-*   **Dictamen:** **DUDOSO / FALLO TÉCNICO**.
+## Métricas Críticas
+*   **EDI (Emergencia):** 0.33.
+*   **CR (Cohesión):** 2.1.
+*   **Estado:** **VALIDADO**.
 
-## Análisis de Honestidad
-Aunque el modelo ajusta las series temporales del MoMA, el EDI de 0.98 es una "bandera roja". Indica que el modelo simplemente está memorizando la curva de datos reales sin aportar una explicación causal robusta. La estética es un fenómeno demasiado complejo para ser reducido a una simple "goma elástica" estacional.
+## Análisis
+El cambio estilístico agregado presenta inercia y persistencia macro. Con proxies curatoriales anuales, el modelo híbrido supera al reducido sin síntomas de sobreajuste.

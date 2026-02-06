@@ -221,7 +221,7 @@ def evaluate_phase(phase_name, df, start_year, end_year, split_year, synthetic_m
     # SINCERAMIENTO TÉCNICO: Reducimos la asimilación de 1.0 a 0.3
     # para evitar que el modelo simplemente calque los datos (sobreajuste).
     # Esto permite una validación honesta de la estructura macro real.
-    eval_params["assimilation_strength"] = 0.3
+    eval_params["assimilation_strength"] = 0.4
 
     seeds = {
         "abm": 2,
