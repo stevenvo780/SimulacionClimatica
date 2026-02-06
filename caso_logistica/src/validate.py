@@ -16,7 +16,7 @@ def main():
     print("Iniciando validación Caso Logística (Bullwhip Effect)...")
     
     # 1. Datos Reales
-    cache_path = "02_Modelado_Simulacion/caso_logistica/data/zim_data.csv"
+    cache_path = "caso_logistica/data/zim_data.csv"
     df = fetch_logistics_data(cache_path)
     
     if df is None or df.empty:
@@ -83,11 +83,11 @@ def main():
         "status": "VALIDATED"
     }
     
-    os.makedirs("02_Modelado_Simulacion/caso_logistica/outputs", exist_ok=True)
-    with open("02_Modelado_Simulacion/caso_logistica/outputs/metrics.json", "w") as f:
+    os.makedirs("caso_logistica/outputs", exist_ok=True)
+    with open("caso_logistica/outputs/metrics.json", "w") as f:
         json.dump(final_metrics, f, indent=2)
         
-    with open("02_Modelado_Simulacion/caso_logistica/outputs/report.md", "w") as f:
+    with open("caso_logistica/outputs/report.md", "w") as f:
         f.write("# Informe de Validación: Crisis Logística\n\n")
         f.write(f"## Efecto Látigo Confirmado\n")
         f.write(f"- **Ratio de Amplificación:** {bw_ratio:.2f}x\n")

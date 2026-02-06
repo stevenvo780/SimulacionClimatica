@@ -15,7 +15,7 @@ from metrics import compute_rmse, compute_cascade_metrics
 def main():
     print("Iniciando Búsqueda de Eventos de Cola Extrema (Black Swans)...")
     
-    cache_path = "02_Modelado_Simulacion/caso_defi/data/defi_data.csv"
+    cache_path = "caso_defi/data/defi_data.csv"
     df = fetch_defi_data(cache_path)
     steps = len(df)
     
@@ -70,11 +70,11 @@ def main():
         "status": "CONVERGED"
     }
     
-    os.makedirs("02_Modelado_Simulacion/caso_defi/outputs", exist_ok=True)
-    with open("02_Modelado_Simulacion/caso_defi/outputs/metrics.json", "w") as f:
+    os.makedirs("caso_defi/outputs", exist_ok=True)
+    with open("caso_defi/outputs/metrics.json", "w") as f:
         json.dump(final_metrics, f, indent=2)
         
-    with open("02_Modelado_Simulacion/caso_defi/outputs/report.md", "w") as f:
+    with open("caso_defi/outputs/report.md", "w") as f:
         f.write("# Informe de Estrés y Convergencia: Cascadas DeFi\n\n")
         f.write(f"## Análisis de Evento de Cola Extrema\n")
         f.write(f"- **Configuración Crítica:** {best_params['num_agents']} agentes con impacto de mercado {best_params['lambda_impact']:.4f}\n")
