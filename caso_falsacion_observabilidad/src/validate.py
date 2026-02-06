@@ -1,302 +1,90 @@
-import json
+"""
+validate.py — Falsación: Observabilidad Escasa
+Validación híbrida ABM+ODE con protocolo C1-C5.
+Generado automáticamente por el framework de validación de hiperobjetos.
+"""
+
 import os
-import random
-import subprocess
-from datetime import datetime
+import sys
 
 import numpy as np
 import pandas as pd
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "common"))
+
 from abm import simulate_abm
 from data import fetch_sparse_happiness
 from ode import simulate_ode
-from metrics import (
-    correlation,
-    dominance_share,
-    internal_vs_external_cohesion,
-    mean,
-    rmse,
-    variance,
-    window_variance,
-)
+from hybrid_validator import CaseConfig, run_full_validation, write_outputs
 
 
-def perturb_params(params, pct, seed):
-    random.seed(seed)
-    perturbed = dict(params)
-    for key in ["diffusion", "macro_coupling", "forcing_scale", "damping", "alpha", "beta"]:
-        delta = params[key] * pct
-        perturbed[key] = params[key] + random.uniform(-delta, delta)
-    return perturbed
+def load_real_data(start_date, end_date):
+
+    cache_path = os.path.join(os.path.dirname(__file__), "..", "data", "sparse_happiness.csv")
+    df = fetch_sparse_happiness(int(start_date[:4]), int(end_date[:4]), cache_path=os.path.abspath(cache_path))
+    df["date"] = pd.to_datetime(df["date"])
+    return df.dropna(subset=["date", "value"])
 
 
-def get_git_info():
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    try:
-        top = subprocess.check_output(
-            ["git", "-C", repo_root, "rev-parse", "--show-toplevel"],
-            text=True,
-            stderr=subprocess.DEVNULL,
-        ).strip()
-        commit = subprocess.check_output(
-            ["git", "-C", repo_root, "rev-parse", "HEAD"],
-            text=True,
-            stderr=subprocess.DEVNULL,
-        ).strip()
-        status = subprocess.check_output(
-            ["git", "-C", repo_root, "status", "--porcelain"],
-            text=True,
-            stderr=subprocess.DEVNULL,
-        ).strip()
-        dirty = bool(status)
-        return {"root": top, "commit": commit, "dirty": dirty}
-    except Exception:
-        return {"root": None, "commit": None, "dirty": None}
-
-
-def load_observations(start_year, end_year):
-    cache_path = os.path.join(
-        os.path.dirname(__file__), "..", "data", "owid_happiness_sparse.csv"
-    )
-    cache_path = os.path.abspath(cache_path)
-    df, meta = fetch_sparse_happiness(
-        cache_path,
-        entity="World",
-        fallback_entity="United States",
-        start_year=start_year,
-        end_year=end_year,
-        drop_rate=0.4,
-        seed=7,
-    )
-    df = df.dropna()
-    return df, meta
-
-
-def make_synthetic_df(start_year, end_year, seed):
+def make_synthetic(start_date, end_date, seed=101):
     rng = np.random.default_rng(seed)
-    years = list(range(start_year, end_year + 1))
-    steps = len(years)
+    dates = pd.date_range(start=start_date, end=end_date, freq="YS")
+    steps = len(dates)
+    if steps < 5:
+        dates = pd.date_range(start=start_date, end=end_date, freq="YS")
+        steps = len(dates)
 
-    k = 0.15
-    mid = int(steps * 0.5)
-    t = np.arange(steps)
-    level = 0.4 * np.tanh(k * (t - mid))
-
-    measurement_noise = 0.04
-    obs = level + rng.normal(0.0, measurement_noise, size=steps)
-
-    df = pd.DataFrame(
-        {
-            "date": [datetime(y, 1, 1) for y in years],
-            "value": obs,
-            "year": years,
-        }
-    )
-    meta = {
-        "k": k,
-        "mid": mid,
-        "measurement_noise": measurement_noise,
+    forcing = [0.01 * t for t in range(steps)]
+    true_params = {
+        "p0": 0.0, "ode_alpha": 0.08, "ode_beta": 0.03,
+        "ode_noise": 0.02, "forcing_series": forcing,
+        "p0_ode": 0.0,
     }
+    sim = simulate_ode(true_params, steps, seed=seed + 1)
+    ode_key = [k for k in sim if k not in ("forcing",)][0]
+    obs = np.array(sim[ode_key]) + rng.normal(0.0, 0.05, size=steps)
+
+    df = pd.DataFrame({"date": dates, "value": obs})
+    meta = {"ode_true": {"alpha": 0.08, "beta": 0.03}, "measurement_noise": 0.05}
     return df, meta
 
 
-def build_forcing(train_obs, steps):
-    if len(train_obs) < 2:
-        return [0.0 for _ in range(steps)], (0.0, 0.0)
-    t = np.arange(len(train_obs))
-    slope, intercept = np.polyfit(t, train_obs, 1)
-    t_full = np.arange(steps)
-    trend = intercept + slope * t_full
-    forcing = (trend - np.mean(trend)).tolist()
-    return forcing, (slope, intercept)
-
-
-def evaluate_phase(phase_name, df, start_year, end_year, split_year, synthetic_meta=None, real_meta=None):
-    expected_years = len(range(start_year, end_year + 1))
-    observed_years = len(df)
-    coverage = observed_years / expected_years if expected_years else 0.0
-
-    if df.empty or observed_years < 6:
-        return {
-            "phase": phase_name,
-            "data": {
-                "start": f"{start_year}-01-01",
-                "end": f"{end_year}-12-31",
-                "split": f"{split_year}-01-01",
-                "obs_mean": 0.0,
-                "obs_std_raw": 0.0,
-                "steps": observed_years,
-                "val_steps": 0,
-                "expected_years": expected_years,
-                "observed_years": observed_years,
-                "coverage": coverage,
-                "outlier_share": 0.0,
-            },
-            "c1_convergence": False,
-            "c2_robustness": False,
-            "c3_replication": False,
-            "c4_validity": False,
-            "c5_uncertainty": False,
-            "overall_pass": False,
-        }
-
-    obs_raw = df["value"].tolist()
-    obs_mean = float(np.mean(obs_raw))
-    obs_std_raw = float(np.std(obs_raw)) if obs_raw else 0.0
-    df = df.copy()
-
-    train_df = df[df["date"].dt.year < split_year]
-    val_df = df[df["date"].dt.year >= split_year]
-    train_mean = float(np.mean(train_df["value"].tolist())) if not train_df.empty else obs_mean
-    train_std = float(np.std(train_df["value"].tolist())) if not train_df.empty else obs_std_raw
-    if train_std > 0.0:
-        df["value_z"] = (df["value"] - train_mean) / train_std
-    else:
-        df["value_z"] = 0.0
-    if train_df.empty or val_df.empty:
-        c1 = False
-        obs = df["value_z"].tolist()
-        obs_val = val_df["value_z"].tolist()
-    else:
-        obs = df["value_z"].tolist()
-        obs_val = val_df["value_z"].tolist()
-        steps = len(obs)
-        val_start = len(train_df)
-
-        forcing_series, trend_params = build_forcing(obs[:val_start], steps)
-
-        base_params = {
-            "grid_size": 20,
-            "diffusion": 0.2,
-            "noise": 0.02,
-            "macro_coupling": 0.1,
-            "forcing_series": forcing_series,
-            "forcing_scale": 0.1,
-            "damping": 0.05,
-            "alpha": 0.2,
-            "beta": 0.05,
-            "p0": obs[0],
-            "p0_ode": obs[0],
-        }
-
-        eval_params = dict(base_params)
-        eval_params["assimilation_series"] = None
-        eval_params["assimilation_strength"] = 0.0
-
-        abm = simulate_abm(eval_params, steps, seed=2)
-        ode = simulate_ode(eval_params, steps, seed=3)
-
-        obs_std = variance(obs_val) ** 0.5
-        err_abm = rmse(abm["incidence"][val_start:], obs_val)
-        err_ode = rmse(ode["share"][val_start:], obs_val)
-        err_threshold = 0.6 * obs_std
-        corr_abm = correlation(abm["incidence"][val_start:], obs_val)
-        corr_ode = correlation(ode["share"][val_start:], obs_val)
-        c1 = err_abm < err_threshold and err_ode < err_threshold and corr_abm > 0.7 and corr_ode > 0.7
-
-    results = {
-        "phase": phase_name,
-        "data": {
-            "start": f"{start_year}-01-01",
-            "end": f"{end_year}-12-31",
-            "split": f"{split_year}-01-01",
-            "obs_mean": obs_mean,
-            "obs_std_raw": obs_std_raw,
-            "steps": observed_years,
-            "val_steps": len(obs_val),
-            "expected_years": expected_years,
-            "observed_years": observed_years,
-            "coverage": coverage,
-            "outlier_share": 0.0,
-        },
-        "c1_convergence": c1,
-        "c2_robustness": False,
-        "c3_replication": False,
-        "c4_validity": False,
-        "c5_uncertainty": coverage >= 0.85,
-        "overall_pass": False,
-    }
-
-    if synthetic_meta:
-        results["synthetic_meta"] = synthetic_meta
-    if real_meta:
-        results["real_meta"] = real_meta
-
-    return results
-
-
-def run():
-    start_year = 2011
-    end_year = 2023
-    split_year = 2018
-
-    synth_df, synth_meta = make_synthetic_df(start_year, end_year, seed=10)
-    real_df, real_meta = load_observations(start_year, end_year)
-
-    synth_results = evaluate_phase(
-        "synthetic",
-        synth_df,
-        start_year,
-        end_year,
-        split_year,
-        synthetic_meta=synth_meta,
+def main():
+    config = CaseConfig(
+        case_name="Falsación: Observabilidad Escasa",
+        value_col="value",
+        series_key="incidence",
+        grid_size=20,
+        persistence_window=3,
+        synthetic_start="2005-01-01",
+        synthetic_end="2023-01-01",
+        synthetic_split="2015-01-01",
+        real_start="2005-01-01",
+        real_end="2023-01-01",
+        real_split="2015-01-01",
+        corr_threshold=0.7,
+        extra_base_params={},
     )
 
-    real_results = evaluate_phase(
-        "real",
-        real_df,
-        start_year,
-        end_year,
-        split_year,
-        real_meta=real_meta,
+    results = run_full_validation(
+        config, load_real_data, make_synthetic,
+        simulate_abm, simulate_ode,
     )
 
-    if not synth_results.get("overall_pass", False):
+    out_dir = os.path.join(os.path.dirname(__file__), "..", "outputs")
+    write_outputs(results, os.path.abspath(out_dir))
 
-        real_results["overall_pass"] = False
-
-        real_results["gated_by_synthetic"] = True
-
-
-    metrics = {
-        "generated_at": datetime.utcnow().isoformat() + "Z",
-        "git": get_git_info(),
-        "phases": {
-            "synthetic": synth_results,
-            "real": real_results,
-        },
-    }
-
-    output_dir = os.path.join(os.path.dirname(__file__), "..", "outputs")
-    os.makedirs(output_dir, exist_ok=True)
-
-    metrics_path = os.path.join(output_dir, "metrics.json")
-    with open(metrics_path, "w", encoding="utf-8") as f:
-        json.dump(metrics, f, indent=2)
-
-    report_path = os.path.join(output_dir, "report.md")
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write("# Reporte de Falsacion - Observabilidad Insuficiente\n\n")
-        f.write(f"## Metadata\n- generated_at: {metrics['generated_at']}\n")
-        git_info = metrics.get("git", {})
-        f.write(f"- git_commit: {git_info.get('commit')}\n")
-        f.write(f"- git_dirty: {git_info.get('dirty')}\n\n")
-        for phase_key in ["synthetic", "real"]:
-            phase = metrics["phases"][phase_key]
-            f.write(f"## Fase {phase_key}\n- overall_pass: {phase['overall_pass']}\n\n")
-            f.write("### Datos\n")
-            for k, v in phase["data"].items():
-                f.write(f"- {k}: {v}\n")
-            f.write("\n### Criterios\n")
-            f.write(f"- c1_convergence: {phase['c1_convergence']}\n")
-            f.write(f"- c5_uncertainty: {phase['c5_uncertainty']}\n\n")
-
-        f.write("## Notas\n")
-        f.write("- Cobertura deliberadamente insuficiente para falsacion.\n")
-
-    return metrics_path, report_path
+    # Resumen
+    for phase_name, phase in results.get("phases", {}).items():
+        edi = phase.get("edi", {})
+        sym = phase.get("symploke", {})
+        print(f"  {phase_name}: overall={phase.get('overall_pass')} "
+              f"EDI={edi.get('value', 0):.3f} CR={sym.get('cr', 0):.3f} "
+              f"C1={phase.get('c1_convergence')} C2={phase.get('c2_robustness')} "
+              f"C3={phase.get('c3_replication')} C4={phase.get('c4_validity')} "
+              f"C5={phase.get('c5_uncertainty')}")
+    print("Validación completa. Ver outputs/metrics.json y outputs/report.md")
 
 
 if __name__ == "__main__":
-    run()
-    print("Validation complete. See outputs/metrics.json and outputs/report.md")
+    main()
