@@ -6,7 +6,7 @@ import requests
 
 API_BASE = "https://api.worldbank.org/v2"
 DEFAULT_UA = "SimulacionClimatica/0.1"
-INDICATOR = "ER.H2O.FWTL.ZS"
+INDICATOR = "SH.H2O.BASW.ZS"  # Acceso a agua potable básica (proxy estrés hídrico)
 
 
 def _request(url, params=None, retries=3):

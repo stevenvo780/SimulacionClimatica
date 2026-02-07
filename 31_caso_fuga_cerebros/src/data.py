@@ -6,7 +6,7 @@ import requests
 
 API_BASE = "https://api.worldbank.org/v2"
 DEFAULT_UA = "SimulacionClimatica/0.1"
-INDICATOR = "SM.POP.NETM"
+INDICATOR = "GB.XPD.RSDV.GD.ZS"  # R&D expenditure % GDP (proxy capital intelectual)
 
 
 def _request(url, params=None, retries=3):
@@ -23,7 +23,7 @@ def _request(url, params=None, retries=3):
             _time.sleep(2 ** attempt)
 
 
-def fetch_net_migration(cache_path, country="WLD", start_year=1960, end_year=2022, refresh=False):
+def fetch_net_migration(cache_path, country="WLD", start_year=1996, end_year=2022, refresh=False):
     """Obtiene Net migration del World Bank."""
     cache_path = os.path.abspath(cache_path)
     if os.path.exists(cache_path) and not refresh:

@@ -6,7 +6,7 @@ import requests
 
 API_BASE = "https://api.worldbank.org/v2"
 DEFAULT_UA = "SimulacionClimatica/0.1"
-INDICATOR = "EN.ATM.CO2E.PC"
+INDICATOR = "EG.USE.PCAP.KG.OE"  # Energy use per capita (proxy emisiones/acidificación)
 
 
 def _request(url, params=None, retries=3):

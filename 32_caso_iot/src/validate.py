@@ -49,7 +49,7 @@ def main():
         case_name="Emergencia IoT",
         value_col="value",
         series_key="io",
-        grid_size=20,
+        grid_size=30,
         persistence_window=5,
         synthetic_start="1960-01-01",
         synthetic_end="2022-01-01",
