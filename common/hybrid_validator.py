@@ -251,6 +251,7 @@ def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
                 key = _get_series_key(sim)
                 err = rmse(sim[key][:len(obs_train)], obs_train)
                 candidates.append((err, fs, mc, dmp))
+                del sim
 
     candidates.sort(key=lambda x: x[0])
     best = candidates[0]
@@ -272,6 +273,7 @@ def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
         sim = simulate_abm_fn(params, steps, seed=seed)
         key = _get_series_key(sim)
         err = rmse(sim[key][:len(obs_train)], obs_train)
+        del sim
         if err < best_err:
             best_params = candidate
             best_err = err
@@ -328,6 +330,7 @@ def evaluate_c2(base_params, eval_params, steps, val_start,
     sim_base = simulate_abm_fn(eval_params, steps, seed=2)
     base_mean = mean(sim_base[series_key][val_start:])
     base_var = variance(sim_base[series_key][val_start:])
+    del sim_base
     deltas_m, deltas_v = [], []
     for i in range(n_pert):
         p = perturb_params(base_params, pct, seed=seed_base + i)
@@ -338,6 +341,7 @@ def evaluate_c2(base_params, eval_params, steps, val_start,
         sim = simulate_abm_fn(p, steps, seed=2 + i + 10)
         deltas_m.append(abs(mean(sim[series_key][val_start:]) - base_mean))
         deltas_v.append(abs(variance(sim[series_key][val_start:]) - base_var))
+        del sim
     avg_dm = mean(deltas_m)
     avg_dv = mean(deltas_v)
     # Relative robustness: perturbation < 50% of base scale
@@ -383,6 +387,7 @@ def evaluate_c5(base_params, eval_params, steps, val_start,
             p["forcing_series"] = eval_params["forcing_series"]
         sim = simulate_abm_fn(p, steps, seed=30 + i)
         means.append(mean(sim[series_key][val_start:]))
+        del sim
     rng = max(means) - min(means) if means else 0.0
     # Relative sensitivity: range should be < 50% of mean scale
     scale = max(abs(mean(means)), 1.0) if means else 1.0
