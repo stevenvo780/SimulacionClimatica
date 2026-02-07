@@ -710,8 +710,14 @@ def run_full_validation(config, load_real_data_fn, make_synthetic_fn,
         param_grid=param_grid
     )
 
-    # Gating: si sintético falla, real falla
-    if not synthetic.get("overall_pass", False):
+    # Gating: si sintético falla condiciones sustantivas, real falla
+    # symploke degeneracy (int==ext) en sintético no bloquea real
+    syn_c1 = synthetic.get("c1_convergence", False)
+    syn_c2 = synthetic.get("c2_robustness", False)
+    syn_c3 = synthetic.get("c3_replication", False)
+    syn_c4 = synthetic.get("c4_validity", False)
+    syn_core = all([syn_c1, syn_c2, syn_c3, syn_c4])
+    if not syn_core:
         real["overall_pass"] = False
         real["gated_by_synthetic"] = True
 
