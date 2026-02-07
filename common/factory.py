@@ -21,8 +21,10 @@ def get_engine(case_num):
     if case_num == 30: # IoT Emergence
         def engine(bits, macro):
             # Sincronización de protocolos por ruido macro
-            sync = bits ^ (np.roll(bits, 1) & macro.astype(int))
-            return sync
+            # Aseguramos que macro sea tratado como int si es necesario
+            m_int = int(macro)
+            sync = bits.astype(int) ^ (np.roll(bits.astype(int), 1) & m_int)
+            return sync.astype(float)
         return engine
 
     # Default: Difusión simple

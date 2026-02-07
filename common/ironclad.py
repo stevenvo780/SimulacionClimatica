@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.metrics import mean_squared_error
 
 def generate_surrogates(data, n_surrogates=100):
     """Genera series de tiempo barajadas manteniendo la distribución."""

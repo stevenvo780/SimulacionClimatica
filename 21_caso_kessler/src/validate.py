@@ -17,7 +17,6 @@ def validate():
     results_reduced = run_simulation(steps, initial_density=0.01, macro_coupling=0.0)
     
     # 3. Datos Reales (Sintéticos para Fase 1)
-    # En Kessler, la "realidad" es una curva de crecimiento exponencial observada por la ESA
     obs = np.array(results_full) + np.random.normal(0, 0.001, steps)
     
     # 4. Cálculo de Errores
@@ -26,11 +25,10 @@ def validate():
     
     edi = calculate_ironclad_edi(rmse_reduced, rmse_full)
     
-    # 5. Test de Surrogados (Significancia Estadística)
+    # 5. Test de Surrogados
     surrogates = generate_surrogates(obs, n_surrogates=100)
     surrogate_edis = []
     for s in surrogates:
-        # Calculamos EDI comparando el modelo contra ruido
         s_rmse_full = np.sqrt(np.mean((results_full - s)**2))
         s_edi = calculate_ironclad_edi(rmse_reduced, s_rmse_full)
         surrogate_edis.append(s_edi)
@@ -48,7 +46,10 @@ def validate():
         "status": "VALIDATED" if edi > 0.3 and p_value < 0.05 else "REJECTED"
     }
     
-    with open('../outputs/metrics.json', 'w') as f:
+    # Path absoluto para el output
+    out_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "outputs"))
+    os.makedirs(out_dir, exist_ok=True)
+    with open(os.path.join(out_dir, 'metrics.json'), 'w') as f:
         json.dump(output, f, indent=4)
     print(f"Validación Kessler: EDI={edi:.3f}, p-value={p_value:.3f}")
 

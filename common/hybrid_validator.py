@@ -254,20 +254,20 @@ def calibrate_ode(obs_train, forcing_train, regularization=0.01):
 
 
 def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
-                   param_grid=None, seed=2, n_refine=2000):
+                   param_grid=None, seed=2, n_refine=5000):
     """
     Grid search masivo + refinamiento local con early stopping.
-    Fase 1: Grid coarse (3135 combos) con podado por percentil.
-    Fase 2: Refinamiento adaptativo alrededor de top candidates.
+    Fase 1: Grid coarse (~6000 combos) con podado por percentil.
+    Fase 2: Refinamiento adaptativo alrededor de top 10 candidates con 5000 iters.
     """
     if param_grid is None:
         param_grid = {
-            "forcing_scale": [0.001, 0.005, 0.01, 0.02, 0.04, 0.06, 0.08, 0.12,
-                              0.18, 0.25, 0.35, 0.45, 0.55, 0.65, 0.8, 0.95,
-                              1.1, 1.3, 1.5],
-            "macro_coupling": [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,
-                               0.8, 0.9, 0.95],
-            "damping": [0.0, 0.005, 0.01, 0.03, 0.06, 0.1, 0.15, 0.2,
+            "forcing_scale": [0.001, 0.003, 0.005, 0.008, 0.01, 0.015, 0.02, 0.03,
+                              0.04, 0.06, 0.08, 0.12, 0.18, 0.25, 0.35, 0.45,
+                              0.55, 0.65, 0.8, 0.95, 1.1, 1.3, 1.5, 1.8, 2.0],
+            "macro_coupling": [0.1, 0.12, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5,
+                               0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1.0],
+            "damping": [0.0, 0.002, 0.005, 0.01, 0.03, 0.06, 0.1, 0.15, 0.2,
                         0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
         }
 
@@ -297,8 +297,8 @@ def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
     best = candidates[0]
 
     # Fase 2: Refinamiento adaptativo multi-punto
-    # Tomar top 5 candidates y refinar alrededor de cada uno
-    top_k = min(5, len(candidates))
+    # Tomar top 10 candidates y refinar alrededor de cada uno
+    top_k = min(10, len(candidates))
     best_params = {"forcing_scale": best[1], "macro_coupling": best[2], "damping": best[3]}
     best_err = best[0]
     rng = random.Random(seed + 100)
@@ -339,10 +339,10 @@ def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
                 stalled = 0
             else:
                 stalled += 1
-            # Early stop si no mejora en 200 iteraciones consecutivas
-            if stalled > 200:
+            # Early stop si no mejora en 300 iteraciones consecutivas
+            if stalled > 300:
                 break
-        if stalled > 200:
+        if stalled > 300:
             break
 
     return best_params, best_err, candidates[:5]

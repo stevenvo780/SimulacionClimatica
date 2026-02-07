@@ -1,0 +1,775 @@
+{
+  "timestamp": "2026-02-06 21:34:58",
+  "total": 21,
+  "pass": 6,
+  "fail": 14,
+  "na": 1,
+  "time_s": 331.1,
+  "details": {
+    "caso_falsacion_observabilidad": {
+      "time_s": 5.7,
+      "metrics": {
+        "synthetic": {
+          "edi": -0.25093557592698207,
+          "corr": 0.3928742463957827,
+          "rmse": 1.4479842782053711,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": false,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.0,
+          "corr": null,
+          "rmse": null,
+          "c1": false,
+          "c2": false,
+          "c3": false,
+          "c4": false,
+          "c5": false,
+          "emergence": false,
+          "symploke": false,
+          "non_locality": false,
+          "coupling": false,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_conciencia": {
+      "time_s": 7.8,
+      "metrics": {
+        "synthetic": {
+          "edi": -0.6964343326037337,
+          "corr": -0.695560794227001,
+          "rmse": 1.6946498568710562,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": false,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        },
+        "real": {
+          "edi": -0.3177783364066281,
+          "corr": -0.6701896051317848,
+          "rmse": 2.7493401424364152,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": false,
+          "symploke": false,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_justicia": {
+      "time_s": 14.8,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.5653252605781551,
+          "corr": 0.6746161174915408,
+          "rmse": 0.8924706442916086,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        },
+        "real": {
+          "edi": -0.23730977351668656,
+          "corr": 0.40826591915525806,
+          "rmse": 2.601248907561825,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": false,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_contaminacion": {
+      "time_s": 18.9,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.5002645429402826,
+          "corr": 0.9291841793188927,
+          "rmse": 2.6187781382887065,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.12375630723425356,
+          "corr": 0.7106023035447615,
+          "rmse": 7.521068794405611,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": false,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_politicas_estrategicas": {
+      "time_s": 13.9,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.5653252605781551,
+          "corr": 0.6746161174915408,
+          "rmse": 0.8924706442916086,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.29189507808586224,
+          "corr": 0.008870158803775409,
+          "rmse": 2.0117673935890372,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_oceanos": {
+      "time_s": 22.1,
+      "metrics": null,
+      "rc": 1
+    },
+    "caso_deforestacion": {
+      "time_s": 24.3,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.5824925700392674,
+          "corr": 0.41100411594428093,
+          "rmse": 0.9094662916177428,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.8466673116410881,
+          "corr": 0.9194830769825633,
+          "rmse": 0.541474013783604,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_paradigmas": {
+      "time_s": 43.1,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.8374584920159108,
+          "corr": 0.8417175888660338,
+          "rmse": 0.5053965810409664,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.6560737567669457,
+          "corr": 0.9531726913886119,
+          "rmse": 1.0180016737856026,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_postverdad": {
+      "time_s": 38.9,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.9130625499032674,
+          "corr": 0.9743487380068995,
+          "rmse": 0.3632472421670528,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.31046288090789587,
+          "corr": -0.051159251891936736,
+          "rmse": 3.813428067695582,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_moderacion_adversarial": {
+      "time_s": 47.0,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.886541801179206,
+          "corr": 0.9405246614247303,
+          "rmse": 0.47123294790499426,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.0031549409454280936,
+          "corr": 0.13892895756390486,
+          "rmse": 1.7155890768360085,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": false,
+          "symploke": false,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_estetica": {
+      "time_s": 52.6,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.8408180885833471,
+          "corr": 0.8193082685884823,
+          "rmse": 0.4513650641453146,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.03168595704577666,
+          "corr": 0.07874076868283413,
+          "rmse": 1.4008435121234877,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": false,
+          "symploke": false,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_urbanizacion": {
+      "time_s": 43.3,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.7955029852542967,
+          "corr": 0.7361725152365238,
+          "rmse": 0.5523478152462356,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.8399705004087098,
+          "corr": 0.9992633127975452,
+          "rmse": 0.5812884092723081,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": false,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_rtb_publicidad": {
+      "time_s": 51.7,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.900705203413538,
+          "corr": 0.9607202081569305,
+          "rmse": 0.35400129550808396,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.42565325724836117,
+          "corr": 0.7545934196546924,
+          "rmse": 6.610323879105674,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_falsacion_no_estacionariedad": {
+      "time_s": 67.7,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.7051033943798058,
+          "corr": 0.726117467741096,
+          "rmse": 0.8927031373596152,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": -0.04494974971099166,
+          "corr": 0.8581346531139225,
+          "rmse": 0.8537071490313272,
+          "c1": false,
+          "c2": false,
+          "c3": true,
+          "c4": true,
+          "c5": false,
+          "emergence": false,
+          "symploke": false,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_movilidad": {
+      "time_s": 72.1,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.6501595087807195,
+          "corr": 0.9993685067658484,
+          "rmse": 2.3879195538441,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.06997390615736754,
+          "corr": 0.5003174655313445,
+          "rmse": 0.97388550648697,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_energia": {
+      "time_s": 78.1,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.6501595087807195,
+          "corr": 0.9993685067658484,
+          "rmse": 2.3879195538441,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.3504484015399646,
+          "corr": 0.7890803275131163,
+          "rmse": 0.960643433624364,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_wikipedia": {
+      "time_s": 78.8,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.6501595087807195,
+          "corr": 0.9993685067658484,
+          "rmse": 2.3879195538441,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.017429163116735872,
+          "corr": 0.3089467252571052,
+          "rmse": 3.7298016730675427,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": false,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_finanzas": {
+      "time_s": 144.7,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.6431282534556676,
+          "corr": 0.9993686926861394,
+          "rmse": 2.382590169775969,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.8803792458055588,
+          "corr": 0.9955613587062258,
+          "rmse": 0.3788988632670307,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_clima": {
+      "time_s": 213.0,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.6865746152332813,
+          "corr": 0.9993697868437743,
+          "rmse": 2.1160223045401496,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.42451821496907727,
+          "corr": 0.8218652202028002,
+          "rmse": 0.5546048716892007,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        }
+      },
+      "rc": 0
+    },
+    "caso_epidemiologia": {
+      "time_s": 215.3,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.006950651847516786,
+          "corr": 0.16589214075644126,
+          "rmse": 0.9409327106624545,
+          "c1": false,
+          "c2": true,
+          "c3": true,
+          "c4": false,
+          "c5": true,
+          "emergence": false,
+          "symploke": false,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        },
+        "real": {
+          "edi": 0.1715672512144148,
+          "corr": 0.7429379668054177,
+          "rmse": 3.7461634134857684,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": false,
+          "emergence": false,
+          "symploke": false,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": true
+        }
+      },
+      "rc": 0
+    },
+    "caso_falsacion_exogeneidad": {
+      "time_s": 331.1,
+      "metrics": {
+        "synthetic": {
+          "edi": 0.7051033943798058,
+          "corr": 0.726117467741096,
+          "rmse": 0.8927031373596152,
+          "c1": true,
+          "c2": true,
+          "c3": true,
+          "c4": true,
+          "c5": true,
+          "emergence": true,
+          "symploke": true,
+          "non_locality": true,
+          "coupling": true,
+          "overall": true,
+          "gated": false
+        },
+        "real": {
+          "edi": -0.9590725556368987,
+          "corr": -0.18295163712096282,
+          "rmse": 1.3745506584089051,
+          "c1": false,
+          "c2": false,
+          "c3": true,
+          "c4": true,
+          "c5": false,
+          "emergence": false,
+          "symploke": false,
+          "non_locality": true,
+          "coupling": true,
+          "overall": false,
+          "gated": false
+        }
+      },
+      "rc": 0
+    }
+  }
+}
