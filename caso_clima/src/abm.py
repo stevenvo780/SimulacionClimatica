@@ -84,7 +84,7 @@ def simulate_abm(params, steps, seed):
                 # Humedad: Variable secundaria que sigue al forzamiento climático.
                 new_h = hum[i][j] + 0.05 * (0.5 - hum[i][j]) + 0.001 * f
 
-                new_grid[i][j] = new_t
+                new_grid[i][j] = max(-50.0, min(50.0, new_t))
                 new_hum[i][j] = new_h
 
         # NUDGING (ASIMILACIÓN):

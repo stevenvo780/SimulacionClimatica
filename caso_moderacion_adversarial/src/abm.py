@@ -51,7 +51,7 @@ def simulate_abm(params, steps, seed):
                     - damping * x
                     + random.uniform(-noise, noise)
                 )
-                new_grid[i][j] = new_x
+                new_grid[i][j] = max(-50.0, min(50.0, new_x))
 
         total = 0.0
         for i in range(n):
