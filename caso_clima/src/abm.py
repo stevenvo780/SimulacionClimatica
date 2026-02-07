@@ -1,3 +1,4 @@
+import numpy as np
 import math
 import random
 
@@ -20,6 +21,7 @@ def simulate_abm(params, steps, seed):
     damping = params.get("damping", 0.02)
     assimilation_series = params.get("assimilation_series")
     assimilation_strength = params.get("assimilation_strength", 0.0)
+    _store_grid = params.get("_store_grid", True)
 
     # Initialize grid
     grid = [[params["t0"] + random.uniform(-0.5, 0.5) for _ in range(n)] for _ in range(n)]
@@ -37,7 +39,7 @@ def simulate_abm(params, steps, seed):
         )
 
     tbar_series = []
-    grid_series = []
+    grid_series = [] if _store_grid else None
 
     for t in range(steps):
         # Compute macro state
@@ -103,7 +105,8 @@ def simulate_abm(params, steps, seed):
         for i in range(n):
             total += sum(grid[i])
         tbar_series.append(total / (n * n))
-        grid_series.append([row[:] for row in grid])
+        if _store_grid:
+            grid_series.append([row[:] for row in grid])
 
     return {
         "tbar": tbar_series,

@@ -1,3 +1,4 @@
+import numpy as np
 import random
 
 
@@ -12,13 +13,14 @@ def simulate_abm(params, steps, seed):
     demand_scale = params.get("demand_scale", 0.05)
     assimilation_series = params.get("assimilation_series")
     assimilation_strength = params.get("assimilation_strength", 0.0)
+    _store_grid = params.get("_store_grid", True)
 
     grid = [[params["d0"] + random.uniform(-0.2, 0.2) for _ in range(n)] for _ in range(n)]
 
     forcing = params["forcing_series"]
     e = params["e0"]
     e_series = []
-    grid_series = []
+    grid_series = [] if _store_grid else None
 
     for t in range(steps):
         f = forcing[t]
@@ -61,7 +63,8 @@ def simulate_abm(params, steps, seed):
 
         grid = new_grid
         e_series.append(e)
-        grid_series.append([row[:] for row in grid])
+        if _store_grid:
+            grid_series.append([row[:] for row in grid])
 
     return {
         "e": e_series,

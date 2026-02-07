@@ -1,3 +1,4 @@
+import numpy as np
 import random
 
 
@@ -11,12 +12,13 @@ def simulate_abm(params, steps, seed):
     damping = params.get("damping", 0.05)
     assimilation_series = params.get("assimilation_series")
     assimilation_strength = params.get("assimilation_strength", 0.0)
+    _store_grid = params.get("_store_grid", True)
 
     grid = [[random.uniform(-0.2, 0.2) for _ in range(n)] for _ in range(n)]
 
     forcing = params["forcing_series"]
     inc_series = []
-    grid_series = []
+    grid_series = [] if _store_grid else None
 
     for t in range(steps):
         f = forcing[t]
@@ -63,7 +65,8 @@ def simulate_abm(params, steps, seed):
 
         grid = new_grid
         inc_series.append(inc)
-        grid_series.append([row[:] for row in grid])
+        if _store_grid:
+            grid_series.append([row[:] for row in grid])
 
     return {
         "incidence": inc_series,

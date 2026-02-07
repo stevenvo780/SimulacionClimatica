@@ -28,35 +28,43 @@ import numpy as np
 import pandas as pd
 
 
-# ─── Métricas básicas ────────────────────────────────────────────────────────
+# ─── Métricas básicas (NumPy vectorizadas) ───────────────────────────────────
 
 def mean(xs):
+    if isinstance(xs, np.ndarray):
+        return float(xs.mean()) if xs.size else 0.0
     return sum(xs) / len(xs) if xs else 0.0
 
 
 def variance(xs):
+    if isinstance(xs, np.ndarray):
+        return float(xs.var()) if xs.size else 0.0
     if not xs:
         return 0.0
-    m = mean(xs)
-    return sum((x - m) ** 2 for x in xs) / len(xs)
+    a = np.array(xs, dtype=np.float64)
+    return float(a.var())
 
 
 def rmse(a, b):
     if len(a) != len(b) or not a:
         return float("inf")
-    return math.sqrt(sum((x - y) ** 2 for x, y in zip(a, b)) / len(a))
+    aa = np.asarray(a, dtype=np.float64)
+    bb = np.asarray(b, dtype=np.float64)
+    return float(np.sqrt(np.mean((aa - bb) ** 2)))
 
 
 def correlation(a, b):
     if len(a) != len(b) or len(a) < 2:
         return 0.0
-    ma, mb = mean(a), mean(b)
-    num = sum((x - ma) * (y - mb) for x, y in zip(a, b))
-    da = math.sqrt(sum((x - ma) ** 2 for x in a))
-    db = math.sqrt(sum((y - mb) ** 2 for y in b))
+    aa = np.asarray(a, dtype=np.float64)
+    bb = np.asarray(b, dtype=np.float64)
+    aa = aa - aa.mean()
+    bb = bb - bb.mean()
+    da = np.sqrt(np.sum(aa ** 2))
+    db = np.sqrt(np.sum(bb ** 2))
     if da < 1e-15 or db < 1e-15:
         return 0.0
-    return max(-1.0, min(1.0, num / (da * db)))
+    return float(np.clip(np.sum(aa * bb) / (da * db), -1.0, 1.0))
 
 
 def window_variance(xs, window):
@@ -75,50 +83,59 @@ def compute_edi(rmse_abm, rmse_reduced):
 
 
 def bootstrap_edi(obs_val, abm_val, reduced_val, n_boot=500, ci=0.95, seed=42):
-    """Bootstrap CI para EDI."""
-    rng = random.Random(seed)
+    """Bootstrap CI para EDI — vectorizado con NumPy."""
     n = len(obs_val)
     if n < 4:
         edi = compute_edi(rmse(abm_val, obs_val), rmse(reduced_val, obs_val))
         return edi, edi, edi
 
-    samples = []
-    for _ in range(n_boot):
-        idx = [rng.randint(0, n - 1) for _ in range(n)]
-        obs_b = [obs_val[i] for i in idx]
-        abm_b = [abm_val[i] for i in idx]
-        red_b = [reduced_val[i] for i in idx]
-        samples.append(compute_edi(rmse(abm_b, obs_b), rmse(red_b, obs_b)))
+    obs_a = np.asarray(obs_val, dtype=np.float64)
+    abm_a = np.asarray(abm_val, dtype=np.float64)
+    red_a = np.asarray(reduced_val, dtype=np.float64)
+    rng = np.random.RandomState(seed)
 
-    samples.sort()
+    # Generar todos los índices de una vez: (n_boot, n)
+    idx = rng.randint(0, n, size=(n_boot, n))
+    obs_b = obs_a[idx]    # (n_boot, n)
+    abm_b = abm_a[idx]
+    red_b = red_a[idx]
+
+    rmse_abm = np.sqrt(np.mean((abm_b - obs_b) ** 2, axis=1))
+    rmse_red = np.sqrt(np.mean((red_b - obs_b) ** 2, axis=1))
+    mask = rmse_red > 1e-15
+    samples = np.where(mask, (rmse_red - rmse_abm) / rmse_red, 0.0)
+
+    samples_sorted = np.sort(samples)
     alpha = (1.0 - ci) / 2.0
-    lo = samples[max(0, int(alpha * n_boot))]
-    hi = samples[min(n_boot - 1, int((1.0 - alpha) * n_boot))]
-    return mean(samples), lo, hi
+    lo = float(samples_sorted[max(0, int(alpha * n_boot))])
+    hi = float(samples_sorted[min(n_boot - 1, int((1.0 - alpha) * n_boot))])
+    return float(samples.mean()), lo, hi
 
 
 def _kde_entropy(series, n_eval=50):
-    """Entropía via KDE."""
-    n = len(series)
+    """Entropía via KDE (vectorizado con NumPy)."""
+    s_arr = np.asarray(series, dtype=np.float64)
+    n = len(s_arr)
     if n < 2:
         return 0.0
-    s = (sum((x - mean(series)) ** 2 for x in series) / n) ** 0.5
+    s = float(s_arr.std())
     if s < 1e-15:
         return 0.0
     h = 1.06 * s * (n ** (-0.2))
     if h < 1e-15:
-        h = (max(series) - min(series)) / 10.0
+        h = float(s_arr.max() - s_arr.min()) / 10.0
     margin = 3 * h
-    x_min = min(series) - margin
-    x_max = max(series) + margin
+    x_min = float(s_arr.min()) - margin
+    x_max = float(s_arr.max()) + margin
+    x_eval = np.linspace(x_min + (x_max - x_min) / (2 * n_eval),
+                         x_max - (x_max - x_min) / (2 * n_eval), n_eval)
     dx = (x_max - x_min) / n_eval
-    entropy = 0.0
-    for k in range(n_eval):
-        x = x_min + (k + 0.5) * dx
-        density = sum(math.exp(-0.5 * ((x - v) / h) ** 2) / (h * math.sqrt(2 * math.pi)) for v in series) / n
-        if density > 1e-15:
-            entropy -= density * math.log(density) * dx
-    return max(0.0, entropy)
+    # Vectorized KDE: shape (n_eval, n)
+    diff = (x_eval[:, None] - s_arr[None, :]) / h
+    density = np.exp(-0.5 * diff ** 2).mean(axis=1) / (h * np.sqrt(2 * np.pi))
+    mask = density > 1e-15
+    entropy = -np.sum(density[mask] * np.log(density[mask]) * dx)
+    return max(0.0, float(entropy))
 
 
 def effective_information(obs, full_pred, reduced_pred):
@@ -131,28 +148,37 @@ def effective_information(obs, full_pred, reduced_pred):
 # ─── Cohesión y Symploké ─────────────────────────────────────────────────────
 
 def internal_vs_external_cohesion(grid_series, forcing_series):
+    """Cohesión interna vs externa — vectorizada con NumPy."""
     steps = len(grid_series)
     if steps == 0:
         return 0.0, 0.0
     n = len(grid_series[0])
+
+    # Convertir a array 3D: (steps, n, n)
+    gs = np.array(grid_series, dtype=np.float64)  # (T, N, N)
+    fs_arr = np.asarray(forcing_series[:steps], dtype=np.float64) if len(forcing_series) >= steps else None
+
+    # Cada celda es una serie temporal: gs[:, i, j] shape (T,)
+    # Vecinos: usar roll + máscara de bordes
     int_corrs = []
     ext_corrs = []
+
     for i in range(n):
         for j in range(n):
-            cell = [grid_series[t][i][j] for t in range(steps)]
-            nb = []
-            for t in range(steps):
-                neighbors = []
-                if i > 0: neighbors.append(grid_series[t][i - 1][j])
-                if i < n - 1: neighbors.append(grid_series[t][i + 1][j])
-                if j > 0: neighbors.append(grid_series[t][i][j - 1])
-                if j < n - 1: neighbors.append(grid_series[t][i][j + 1])
-                nb.append(sum(neighbors) / len(neighbors))
-            int_corrs.append(correlation(cell, nb))
-            if len(forcing_series) == steps:
-                ext_corrs.append(correlation(cell, forcing_series))
-    internal = mean(int_corrs)
-    external = mean(ext_corrs) if ext_corrs else 0.0
+            cell = gs[:, i, j]  # (T,)
+            # Promedio de vecinos por timestep
+            nb_list = []
+            if i > 0: nb_list.append(gs[:, i-1, j])
+            if i < n-1: nb_list.append(gs[:, i+1, j])
+            if j > 0: nb_list.append(gs[:, i, j-1])
+            if j < n-1: nb_list.append(gs[:, i, j+1])
+            nb_mean = np.mean(nb_list, axis=0)  # (T,)
+            int_corrs.append(float(np.corrcoef(cell, nb_mean)[0, 1]) if cell.std() > 1e-15 and nb_mean.std() > 1e-15 else 0.0)
+            if fs_arr is not None:
+                ext_corrs.append(float(np.corrcoef(cell, fs_arr)[0, 1]) if cell.std() > 1e-15 and fs_arr.std() > 1e-15 else 0.0)
+
+    internal = float(np.nanmean(int_corrs))
+    external = float(np.nanmean(ext_corrs)) if ext_corrs else 0.0
     return internal, external
 
 
@@ -163,23 +189,27 @@ def cohesion_ratio(internal, external):
 
 
 def dominance_share(grid_series):
+    """Dominancia: qué celda controla más la dinámica global — vectorizada."""
     steps = len(grid_series)
     if steps == 0:
         return 1.0
     n = len(grid_series[0])
-    regional = []
-    for t in range(steps):
-        total = sum(sum(row) for row in grid_series[t])
-        regional.append(total / (n * n))
-    scores = []
+    gs = np.array(grid_series, dtype=np.float64)  # (T, N, N)
+    regional = gs.mean(axis=(1, 2))  # (T,)
+    if regional.std() < 1e-15:
+        return 1.0 / (n * n)
+    scores = np.zeros(n * n)
     for i in range(n):
         for j in range(n):
-            cell = [grid_series[t][i][j] for t in range(steps)]
-            scores.append(abs(correlation(cell, regional)))
-    total_s = sum(scores) if scores else 1.0
+            cell = gs[:, i, j]
+            if cell.std() < 1e-15:
+                scores[i * n + j] = 0.0
+            else:
+                scores[i * n + j] = abs(float(np.corrcoef(cell, regional)[0, 1]))
+    total_s = scores.sum()
     if total_s < 1e-15:
         return 1.0 / (n * n)
-    return max(scores) / total_s
+    return float(scores.max() / total_s)
 
 
 # ─── Calibración ──────────────────────────────────────────────────────────────
@@ -251,6 +281,7 @@ def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
                 params["damping"] = dmp
                 params["assimilation_strength"] = 0.0
                 params["assimilation_series"] = None
+                params["_store_grid"] = False  # No almacenar grid en calibración
                 sim = simulate_abm_fn(params, steps, seed=seed)
                 key = _get_series_key(sim)
                 err = rmse(sim[key][:len(obs_train)], obs_train)
@@ -274,6 +305,7 @@ def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
         params.update(candidate)
         params["assimilation_strength"] = 0.0
         params["assimilation_series"] = None
+        params["_store_grid"] = False  # No almacenar grid en refinamiento
         sim = simulate_abm_fn(params, steps, seed=seed)
         key = _get_series_key(sim)
         err = rmse(sim[key][:len(obs_train)], obs_train)
