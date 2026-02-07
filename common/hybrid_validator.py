@@ -350,7 +350,8 @@ def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
 
 def _get_series_key(sim_result):
     """Detecta la clave de la serie principal del resultado."""
-    for k in ["p", "tbar", "x", "e", "m", "w", "incidence", "share", "d", "u"]:
+    for k in ["p", "tbar", "x", "e", "m", "w", "incidence", "share", "d", "u",
+              "ao", "k", "sl", "ph", "ed", "mp", "aq", "st", "rb", "fc", "io"]:
         if k in sim_result:
             return k
     raise KeyError(f"No se encontró clave de serie en: {list(sim_result.keys())}")
