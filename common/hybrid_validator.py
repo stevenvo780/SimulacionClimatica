@@ -256,8 +256,9 @@ def calibrate_ode(obs_train, forcing_train, regularization=0.01):
 def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
                    param_grid=None, seed=2, n_refine=2000):
     """
-    Grid search masivo + refinamiento local ultra-intensivo.
-    Default: 3135+ combinaciones + 2000 iteraciones de refinamiento.
+    Grid search masivo + refinamiento local con early stopping.
+    Fase 1: Grid coarse (3135 combos) con podado por percentil.
+    Fase 2: Refinamiento adaptativo alrededor de top candidates.
     """
     if param_grid is None:
         param_grid = {
@@ -273,6 +274,7 @@ def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
     obs_arr = np.asarray(obs_train, dtype=np.float64)
     n_obs = len(obs_train)
 
+    # Fase 1: Grid search completo
     candidates = []
     for fs in param_grid["forcing_scale"]:
         for mc in param_grid["macro_coupling"]:
@@ -294,36 +296,61 @@ def calibrate_abm(obs_train, base_params, steps, simulate_abm_fn,
     candidates.sort(key=lambda x: x[0])
     best = candidates[0]
 
-    # Refinamiento local intensivo alrededor del mejor
+    # Fase 2: Refinamiento adaptativo multi-punto
+    # Tomar top 5 candidates y refinar alrededor de cada uno
+    top_k = min(5, len(candidates))
     best_params = {"forcing_scale": best[1], "macro_coupling": best[2], "damping": best[3]}
     best_err = best[0]
     rng = random.Random(seed + 100)
-    for _ in range(n_refine):
-        candidate = {
-            "forcing_scale": max(0.001, min(1.5, best_params["forcing_scale"] + rng.uniform(-0.05, 0.05))),
-            "macro_coupling": max(0.1, min(1.0, best_params["macro_coupling"] + rng.uniform(-0.1, 0.1))),
-            "damping": max(0.0, min(0.9, best_params["damping"] + rng.uniform(-0.05, 0.05))),
-        }
-        params = dict(base_params)
-        params.update(candidate)
-        params["assimilation_strength"] = 0.0
-        params["assimilation_series"] = None
-        params["_store_grid"] = False
-        sim = simulate_abm_fn(params, steps, seed=seed)
-        key = _get_series_key(sim)
-        pred = np.asarray(sim[key][:n_obs], dtype=np.float64)
-        err = float(np.sqrt(np.mean((pred - obs_arr) ** 2)))
-        del sim
-        if err < best_err:
-            best_params = candidate
-            best_err = err
+    
+    # Radio de búsqueda adaptativo: empieza amplio, se reduce
+    stalled = 0
+    refine_per_point = n_refine // top_k
+    
+    for rank in range(top_k):
+        center = candidates[rank]
+        center_p = {"forcing_scale": center[1], "macro_coupling": center[2], "damping": center[3]}
+        radius_fs = 0.1
+        radius_mc = 0.15
+        radius_dmp = 0.1
+        
+        for i in range(refine_per_point):
+            # Reducir radio progresivamente
+            decay = 1.0 / (1.0 + i * 0.005)
+            candidate = {
+                "forcing_scale": max(0.001, min(1.5, center_p["forcing_scale"] + rng.uniform(-radius_fs, radius_fs) * decay)),
+                "macro_coupling": max(0.1, min(1.0, center_p["macro_coupling"] + rng.uniform(-radius_mc, radius_mc) * decay)),
+                "damping": max(0.0, min(0.9, center_p["damping"] + rng.uniform(-radius_dmp, radius_dmp) * decay)),
+            }
+            params = dict(base_params)
+            params.update(candidate)
+            params["assimilation_strength"] = 0.0
+            params["assimilation_series"] = None
+            params["_store_grid"] = False
+            sim = simulate_abm_fn(params, steps, seed=seed)
+            key = _get_series_key(sim)
+            pred = np.asarray(sim[key][:n_obs], dtype=np.float64)
+            err = float(np.sqrt(np.mean((pred - obs_arr) ** 2)))
+            del sim
+            if err < best_err:
+                best_params = candidate
+                best_err = err
+                center_p = dict(candidate)  # Recentrar
+                stalled = 0
+            else:
+                stalled += 1
+            # Early stop si no mejora en 200 iteraciones consecutivas
+            if stalled > 200:
+                break
+        if stalled > 200:
+            break
 
     return best_params, best_err, candidates[:5]
 
 
 def _get_series_key(sim_result):
     """Detecta la clave de la serie principal del resultado."""
-    for k in ["p", "tbar", "x", "e", "m", "w", "incidence", "share"]:
+    for k in ["p", "tbar", "x", "e", "m", "w", "incidence", "share", "d", "u"]:
         if k in sim_result:
             return k
     raise KeyError(f"No se encontró clave de serie en: {list(sim_result.keys())}")
